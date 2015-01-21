@@ -18,7 +18,9 @@ var ABP = {
 				elem.setAttribute(n, props[n]);
 			}else if(n === "className"){
 				elem.className = props[n];
-			}else{
+			}else if (n === "html") {
+				elem.innerHTML = props[n];
+			} else {
 				for(var x in props.style){
 					elem.style[x] = props.style[x];
 				}
@@ -121,7 +123,7 @@ var ABP = {
 					var sources = [];
 					for(var mime in plist[id]["sources"]){
 						sources.push(_("source", {
-							"src":plist[id][mime],
+							"src":plist[id]["sources"][mime],
 							"type":mime
 						}));
 					}
@@ -140,43 +142,125 @@ var ABP = {
 			playlist.push(params.src);
 		}
 		container.appendChild(_("div",{
-				"className" : "ABP-Video",
-				"tabindex" : "10"	
-			}, [_("div", {
-					"className":"ABP-Container"
-				}),
-				playlist[0]
-		]));		
-		container.appendChild(_("div", {
+			"className":"ABP-Player"
+			},[
+				_("div",{
+					"className" : "ABP-Video",
+					"tabindex" : "10"	
+				}, [_("div", {
+						"className":"ABP-Container"
+					}),
+					playlist[0]
+				]),
+				_("div", {
 					"className":"ABP-Text",
-			},[
-				_("input", {
-					"type":"text"
-				})
-		]));
-		container.appendChild(_("div", {
-					"className":"ABP-Control"
-			},[
-				_("div", {
-						"className": "button ABP-Play"
-				}),
-				_("div", {
-					"className": "progress-bar"
 				},[
 					_("div", {
-						"className": "bar dark"
+						"className" : "button ABP-CommentFont"
 					}),
 					_("div", {
-						"className": "bar"
+						"className" : "button ABP-CommentColor"
+					}),
+					_("input", {
+						"type":"text"
+					}),
+					_("div", {
+						"className" : "button ABP-CommentSend"
 					})
 				]),
 				_("div", {
-					"className": "button ABP-CommentShow"
+						"className":"ABP-Control"
+				},[
+					_("div", {
+							"className": "button ABP-Play"
+					}),
+					_("div", {
+						"className": "progress-bar"
+					},[
+						_("div", {
+							"className": "bar"
+						},[
+							_("div", {
+								"className": "load"
+							}),
+							_("div", {
+								"className": "dark"
+							})
+						])
+					]),
+					_("div", {
+							"className": "ABP-TimeLabel"
+					}),
+					_("div", {
+						"className": "button ABP-VolumeButton"
+					}),
+					_("div", {
+						"className": "volume-bar"
+					},[
+						_("div", {
+							"className": "bar"
+						},[
+							_("div", {
+								"className": "load"
+							})
+						])
+					]),
+					_("div", {
+						"className": "button ABP-CommentShow"
+					}),
+					_("div", {
+							"className": "button ABP-Loop"
+					}),
+					_("div", {
+							"className": "button ABP-WideScreen"
+					}),
+					_("div", {
+						"className": "button ABP-FullWindow"
+					}),
+					_("div", {
+						"className": "button ABP-FullScreen"
+					})
+				]),
+				_("div", {
+					"className": "box ABP-CommentFont-Box"
 				}),
 				_("div", {
-					"className": "button ABP-FullScreen"
+					"className": "box ABP-CommentColor-Box"
 				})
-		]));
+			]));
+		container.appendChild(_("div",{
+			"className":"ABP-CommentList"
+			},[
+				_("div",{
+					"className":"ABP-CommentList-Title"
+				},[
+					_("div", {
+						"className":"time",
+						"html":"时间"
+					}),
+					_("div", {
+						"className":"content",
+						"html":"评论"
+					}),
+					_("div", {
+						"className":"date",
+						"html":"发送日期"
+					})
+				]),
+				_("div",{
+					"className":"ABP-CommentList-Container"
+				})
+			]));
+		container.appendChild(_("div",{
+			"className":"ABP-InfoBox"
+			},[
+			//todo
+			]));
+		container.appendChild(_("div",{
+			"className":"ABP-SettingsBox"
+			},[
+			//todo
+			]));
 		var bind = ABP.bind(container, params.mobile);
 		if(playlist.length > 0){
 			var currentVideo = playlist[0];

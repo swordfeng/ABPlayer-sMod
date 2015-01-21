@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>ABPlayerHTML5 by Jabbany</title>
-   	<link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="css/ext/styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="css/base.min.css?1" />
@@ -20,12 +19,10 @@
 						"src":{
 							"playlist":[
 								{
-									"video":document.getElementById("video-1"),
-									"comments":"comment-otsukimi.xml"
+									"sources":{"video/mp4":"1.mp4"},
 								},
 								{
-									"video":document.getElementById("video-2"),
-									"comments":"comment-science.xml"
+									"sources":{"video/mp4":"2.mp4"},
 								}
 							]
 						},
@@ -66,16 +63,6 @@
 		<p>ABPlayerHTML5 是一个简单易懂的现代弹幕魔法播放器。这个项目意在取代基于 Flash 的 ABPlayer，同时也希望能为新一代的HTML5弹幕播放器打造一个实现范例。这个播放器將用相对通俗易懂的方法，实现最基础的弹幕播放器功能，以供开发者参照。</p>
 	<h2>Examples / 使用范例</h2>
 	<hr>
-	<video id="video-1" autobuffer="true" data-setup="{}" width="800" height="450">
-		<source src="//static.cdn.moe/ccltestingvideos/otsukimi_recital.mp4" type="video/mp4">
-		<source src="//static.cdn.moe/ccltestingvideos/otsukimi_recital.webm" type="video/webm">
-		<p>Your browser does not support html5 video!</p>
-	</video>
-	<video id="video-2" style="display:none;" data-setup="{}" width="800" height="450">
-		<source src="//static.cdn.moe/ccltestingvideos/outer_science.webm" type="video/webm">
-		<source src="//static.cdn.moe/ccltestingvideos/outer_science.mp4" type="video/mp4">
-		<p>Your browser does not support html5 video!</p>
-	</video>
 	<div id="load-player"></div>
 	<a id="click-load" class="pbutton" href="#">Load ABPlayerHTML5 Binding</a><br>
 	<p>To load the ABPlayer code in your web application insert the following lines of code in the <code>&lt;head&gt;</code> area.</p>
