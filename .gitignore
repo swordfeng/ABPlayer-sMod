@@ -1,3 +1,5 @@
 core/
 node_modules/
 build/
+*.min.js
+*.swp

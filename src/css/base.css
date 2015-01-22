@@ -1,11 +1,13 @@
+
+/** Global **/
 .ABP-Unit{
 	position:relative;
 	/*color:#444;*/
 	/*background:#fff;*/
 	font-size:16px;
-	outline:none;
+	border:none;
 }
-.ABP-Unit.ABP-Full{
+.ABP-Unit.ABP-Full .ABP-Player{
 	top:0;
 	left:0;
 	right:0;
@@ -25,11 +27,23 @@
 	top:0;left:0;right:300px;bottom:0;
 	background:#CCC;
 }
+.ABP-Unit.ABP-Wide .ABP-Player{
+	right:0;
+}
+.ABP-Unit.ABP-Wide .ABP-SideBlock{
+	display:none;
+}
+
+
+/** Video **/
 .ABP-Unit .ABP-Video{
 	position:absolute;
 	overflow:hidden;
 	top:0;left:0;right:0;bottom:50px;
 	background:#000;
+}
+.ABP-Unit.ABP-Screen .ABP-Video{
+	bottom:0;
 }
 .ABP-Unit .ABP-Video .ABP-VideoItem{
 	position:absolute;
@@ -43,6 +57,7 @@
 	display:none;
 }
 
+/** Danmaku **/
 .ABP-Unit .ABP-Video .ABP-Container{
 	-webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 	transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
@@ -61,7 +76,6 @@
 	-ms-user-select: none;
 	user-select: none;
 }
-
 .ABP-Unit .ABP-Video .ABP-Container .cmt{
 	-webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 	transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
@@ -88,7 +102,7 @@
 	text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
 }
 
-
+/** Controls **/
 .ABP-Unit .button{
 	overflow:hidden;
 	background:#F00;
@@ -104,15 +118,12 @@
 	-o-transition: background-color 0.2s ease-in-out;
 	transition: background-color 0.2s ease-in-out;
 }
-
 .ABP-Unit .button:hover{
 	background-color:#6cf;
 }
-
 .ABP-Unit .right{
 	float:right;
 }
-
 .ABP-Unit .autofill{
 	position:relative;
 	height:100%;
@@ -122,13 +133,23 @@
 .ABP-Unit .ABP-CommentSend{
 	width:75px;
 }
+.ABP-Unit .ABP-CommentSend:before {
+	content:"发送";
+}
+
+.ABP-Unit.ABP-Screen .ABP-Toolbar {
+	opacity:0;
+}
+.ABP-Unit.ABP-Screen .ABP-Toolbar:hover {
+	opacity:1!important;
+}
 
 .ABP-Unit .ABP-Text{
 	position:absolute;
 	bottom:0px;left:0;right:0;
 	height:25px;
 	padding:0;
-	outline:#ececec solid 1px;
+	border:#ececec solid 1px;
 }
 
 .ABP-Unit .ABP-Text .ABP-TextBox input[type=text]{
@@ -138,7 +159,7 @@
 	display:block;
 	vertical-align: middle;
 	color:#33b5e5;
-	outline:none;
+	border:none;
 	font-family: monospace;
 	font-size:18px;
 	height:100%;
@@ -150,7 +171,7 @@
 	bottom:25px;left:0;right:0;
 	opacity:0.9;
 	height:25px;
-	outline:#ececec solid 1px;
+	border:#ececec solid 1px;
 	-moz-user-select: -moz-none;
 	-khtml-user-select: none;
 	-webkit-user-select: none;
@@ -159,7 +180,7 @@
 }
 
 
-.ABP-Unit .ABP-Play{
+.ABP-Unit .ABP-Play:{
 	background-image:url(play.png);
 	background-size:cover;
 	left:0;
@@ -193,16 +214,31 @@
 	border-radius:6px;
 	position:relative;
 	background:#002222;
-	opacity:0.4;
 }
 
 .ABP-Unit .ABP-Control .bar .dark{
-	background:#0099cc;
+	position:absolute;
+	background:#0044CC;
+	height:100%;
+	border-radius:6px;
 	opacity:1;
 }
 
+.ABP-Unit .ABP-Control .bar .dark:before{
+	height:10px;
+	width:10px;
+	border-radius:10px;
+	border:#000 solid 1px;
+	border-radius:6px;
+}
+
+.ABP-Unit .ABP-Control .bar .dark:after{
+}
 .ABP-Unit .ABP-Control .bar .load{
+	position:absolute;
 	background:#4399ee;
+	height:100%;
+	border-radius:6px;
 	opacity:1;
 }
 
