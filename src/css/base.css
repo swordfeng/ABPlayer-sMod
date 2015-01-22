@@ -1,212 +1,270 @@
 .ABP-Unit{
-  position:relative;
-  /*color:#444;*/
-  background:#fff;
-  font-size:16px;
-  outline:none;
+	position:relative;
+	/*color:#444;*/
+	/*background:#fff;*/
+	font-size:16px;
+	outline:none;
 }
-.ABP-Unit.ABP-FullScreen{
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  width:auto !important;
-  height:auto !important;
-  position:fixed;
-  z-index:9999;
+.ABP-Unit.ABP-Full{
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	width:auto !important;
+	height:auto !important;
+	position:fixed;
+	z-index:9999;
+}
+.ABP-NoScroll{
+	overflow:scroll!important;
+	overflow-x:hidden!important;
+	overflow-y:hidden!important;
+}
+.ABP-Unit .ABP-Player{
+	position:absolute;
+	top:0;left:0;right:300px;bottom:0;
+	background:#CCC;
 }
 .ABP-Unit .ABP-Video{
-  position:absolute;
-  overflow:hidden;
-  top:0;left:0;right:0;bottom:72px;
-  background:#000;
+	position:absolute;
+	overflow:hidden;
+	top:0;left:0;right:0;bottom:50px;
+	background:#000;
 }
-.ABP-Unit .ABP-Video video{
-  width:100%;
-  height:100%;
+.ABP-Unit .ABP-Video .ABP-VideoItem{
+	position:absolute;
+	width:100%;
+	height:100%;
+}
+.ABP-Unit .ABP-Video .ABP-VideoItemHidden {
+	display:none;
+}
+.ABP-Unit .ABP-Video .ABP-VideoItemHidden{
+	display:none;
 }
 
 .ABP-Unit .ABP-Video .ABP-Container{
-  -webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-          transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-  position: absolute;
-  display: block;
-  overflow: hidden;
-  margin: 0;
-  border: 0;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  touch-callout: none;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+	-webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+	transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+	position: absolute;
+	display: block;
+	overflow: hidden;
+	margin: 0;
+	border: 0;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .ABP-Unit .ABP-Video .ABP-Container .cmt{
-  -webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-          transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-  position: absolute;
-  padding: 3px 0 0 0;
-  margin: 0;
-  color: #fff;
-  font-family: SimHei, SimSun, Heiti, "MS Mincho", "Meiryo", "Microsoft YaHei", monospace;
-  font-size: 25px;
-  text-decoration: none;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  -webkit-text-size-adjust: none;
-      -ms-text-size-adjust: none;
-          text-size-adjust: none;
-  line-height: 100%;
-  letter-spacing: 0;
-  word-break: keep-all;
-  white-space: pre;
+	-webkit-transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+	transform: matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+	position: absolute;
+	padding: 3px 0 0 0;
+	margin: 0;
+	color: #fff;
+	font-family: SimHei, SimSun, Heiti, "MS Mincho", "Meiryo", "Microsoft YaHei", "WenQuanYi Micro Hei Mono", monospace;
+	font-size: 25px;
+	text-decoration: none;
+	text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+	-webkit-text-size-adjust: none;
+	-ms-text-size-adjust: none;
+	text-size-adjust: none;
+	line-height: 100%;
+	letter-spacing: 0;
+	word-break: keep-all;
+	white-space: pre;
 }
 .ABP-Unit .ABP-Video .ABP-Container .cmt.noshadow{
-  text-shadow: none;
+	text-shadow: none;
 }
 .ABP-Unit .ABP-Video .ABP-Container .cmt.rshadow{
-  text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+	text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
+}
+
+
+.ABP-Unit .button{
+	overflow:hidden;
+	background:#F00;
+	width:35px;
+	top:0;
+	bottom:0;
+	height:100%;
+	display:block;
+	float:left;
+	-webkit-transition: background-color 0.2s ease-in-out;
+	-moz-transition: background-color 0.2s ease-in-out;
+	-ms-transition: background-color 0.2s ease-in-out;
+	-o-transition: background-color 0.2s ease-in-out;
+	transition: background-color 0.2s ease-in-out;
+}
+
+.ABP-Unit .button:hover{
+	background-color:#6cf;
+}
+
+.ABP-Unit .right{
+	float:right;
+}
+
+.ABP-Unit .autofill{
+	position:relative;
+	height:100%;
+	overflow:auto;
+}
+
+.ABP-Unit .ABP-CommentSend{
+	width:75px;
 }
 
 .ABP-Unit .ABP-Text{
-  position:absolute;
-  bottom:0px;left:0;right:0;
-  height:25px;
-  padding:0;
-  border-top:1px solid #33b5e5;
-  background:#000;
-  opacity:0.9;
+	position:absolute;
+	bottom:0px;left:0;right:0;
+	height:25px;
+	padding:0;
+	outline:#ececec solid 1px;
 }
-.ABP-Unit .ABP-Text .colorsel{
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
+
+.ABP-Unit .ABP-Text .ABP-TextBox input[type=text]{
+	background:transparent;
+	border:none;
+	padding:0;margin:0;
+	display:block;
+	vertical-align: middle;
+	color:#33b5e5;
+	outline:none;
+	font-family: monospace;
+	font-size:18px;
+	height:100%;
+	width:100%;
 }
-.ABP-Unit .ABP-Text input[type=text]{
-  background:transparent;
-  border:none;
-  padding:0;margin:0;
-  /*position:absolute;*/
-  position:relative;
-  display:block;
-  /*top:0;left:0;right:0;bottom:0;*/
-  vertical-align: middle;
-  color:#33b5e5;
-  outline:none;
-  font-family: monospace;
-  height:25px;
-  min-width:90%;
-  padding-left:10px;padding-right:10px;
-  font-size:18px;
-}
+
 .ABP-Unit .ABP-Control{
-  position:absolute;
-  bottom:25px;left:0;right:0;
-  background:#000;
-  opacity:0.9;
-  border-top:1px solid #33b5e5;
-  height:25px;
-  -moz-user-select: -moz-none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-}
-.ABP-Unit .ABP-Control:hover{
-  opacity:1;
+	position:absolute;
+	bottom:25px;left:0;right:0;
+	opacity:0.9;
+	height:25px;
+	outline:#ececec solid 1px;
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
-.ABP-Unit .button{
-  position:absolute;
-  overflow:hidden;
-  background-color:#000;
-  width:25px;
-  top:0;bottom:0;
-  -webkit-transition: background-color 0.2s ease-in-out;
-  -moz-transition: background-color 0.2s ease-in-out;
-  -ms-transition: background-color 0.2s ease-in-out;
-  -o-transition: background-color 0.2s ease-in-out;
-  transition: background-color 0.2s ease-in-out;
-}
 
-.ABP-Unit .ABP-Control .button:hover{
-  background-color:#6cf;
-}
-
-.ABP-Unit .ABP-Control .ABP-Play{
-  background-image:url(play.png);
-  background-size:cover;
-  left:0;
+.ABP-Unit .ABP-Play{
+	background-image:url(play.png);
+	background-size:cover;
+	left:0;
 }
 
 .ABP-Unit .ABP-Control .ABP-Play.ABP-Pause{
-  background-image:url(pause.png);
+	background-image:url(pause.png);
 }
 
 .ABP-Unit .ABP-Control .ABP-FullScreen{
-  background-image:url(fullscreen.png);
-  background-size:cover;
-  right:0;
+	background-image:url(fullscreen.png);
+	background-size:cover;
+	right:0;
 }
 
 .ABP-Unit .ABP-Control .ABP-CommentShow{
-  background-image:url(danmaku.png?);
-  background-size:cover;
-  top:0;right:25px;bottom:0;
-}
-.ABP-Unit .ABP-Control .progress-bar {
-  position:absolute;
-  overflow:hidden;
-  cursor:default;
-  top:0;right:40px;bottom:0;left:25px;
-  background:#000;
+	background-image:url(danmaku.png?);
+	background-size:cover;
+	top:0;right:25px;bottom:0;
 }
 
-.ABP-Unit .ABP-Control .progress-bar .bar{
-  position:absolute;
-  left:0;top:0;bottom:0;
-  background:#4399ee;
-  opacity:0.4;
+.ABP-Unit .ABP-Control .volume-bar {
+	height:100%;
+	width:100px;
 }
 
-.ABP-Unit .ABP-Control .progress-bar .bar.dark{
-  background:#0099cc;
-  opacity:1;
+.ABP-Unit .ABP-Control .bar{
+	top:50%;
+	height:6px;
+	margin:-3px 10px 0 10px;
+	border-radius:6px;
+	position:relative;
+	background:#002222;
+	opacity:0.4;
+}
+
+.ABP-Unit .ABP-Control .bar .dark{
+	background:#0099cc;
+	opacity:1;
+}
+
+.ABP-Unit .ABP-Control .bar .load{
+	background:#4399ee;
+	opacity:1;
+}
+
+
+.ABP-Unit .ABP-Control .ABP-TimeLabel{
+	width:50px;
+	height:100%;
+	position:relative;
+}
+.ABP-Unit .ABP-Control .ABP-FullWindow {
+	position:absolute;
+	right:0;
+	top:-27px;  /* 25+2=27 */
+	bottom:27px;
+	margin:2px 0;
+	visibility:hidden;
+}
+.ABP-Unit .ABP-Control .ABP-FullScreen:hover + .ABP-FullWindow {
+	visibility:visible!important;
+}
+.ABP-Unit .ABP-Control .ABP-FullWindow:hover {
+	visibility:visible!important;
 }
 
 .ABP-Unit .ABP-Popup{
-  position:absolute;
-  background:#000;
-  border:1px solid #33b5e5;
-  left:10px;
-  padding:5px;
-  bottom:82px;
-  opacity:0.8;
+	position:absolute;
+	border:1px solid #33b5e5;
+	left:10px;
+	padding:5px;
+	bottom:82px;
+	opacity:0.8;
 }
+
+.ABP-Unit .ABP-SideBlock {
+	position:absolute;
+	width:300px;
+	right:0;
+	background:#CCC;
+}
+
 /** Aliases for Chinese named fonts because they don't work on *nix **/
 @font-face{
-  font-family: "\9ED1\4F53";
-  src:local('SimHei');
+	font-family: "\9ED1\4F53";
+	src:local('SimHei');
 }
 
 @font-face{
-  font-family: "\5B8B\4F53";
-  src:local('SimSun');
+	font-family: "\5B8B\4F53";
+	src:local('SimSun');
 }
 
 @font-face{
-  font-family: "\534E\6587\6977\4F53";
-  src:local('SimKai');
+	font-family: "\534E\6587\6977\4F53";
+	src:local('SimKai');
 }
 
 @font-face{
-  font-family: "\5E7C\5706";
-  src:local('YouYuan');
+	font-family: "\5E7C\5706";
+	src:local('YouYuan');
 }
 
 @font-face{
-  font-family: "\5FAE\8F6F\96C5\9ED1";
-  src:local('Microsoft YaHei');
+	font-family: "\5FAE\8F6F\96C5\9ED1";
+	src:local('Microsoft YaHei');
 }
