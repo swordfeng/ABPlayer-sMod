@@ -132,7 +132,6 @@ var ABP = {
 				}else{
 					console.log("No recognized format");
 				}
-				danmaku.push(plist[id]["comments"]);
 			}
 		}else{
 			playlist.push(params.src);
@@ -267,7 +266,10 @@ var ABP = {
 			//todo
 		]));
 		var bind = ABP.bind(container, params.mobile);
-		CommentLoader(danmaku[0], bind.cmManager);
+		if (params.src.hasOwnProperty("danmaku")) {
+			CommentLoader(params.src.danmaku, bind.cmManager);
+			console.log(bind.cmManager);
+		}
 		return bind;
 	}
 
@@ -283,6 +285,7 @@ var ABP = {
 			btnFullWin:null,
 			btnWide:null,
 			btnDm:null,
+			btnLoop:null,
 			videos:null,
 			timeLabel:null,
 			divTextField:null,
@@ -348,7 +351,13 @@ var ABP = {
 			ABPInst.videos[item].currentTime=pos;
 			changeItem(item);
 			//currentTime=pos;
+			if (ABPInst.cmManager) {
+				ABPInst.cmManager.time(parseInt(pos*1000));
+				ABPInst.cmManager.clear();
+			}
 			if (ABPInst.playing) {
+				if (ABPInst.cmManager && ABPInst.cmManager.display)
+					ABPInst.cmManager.startTimer();
 				ABPInst.videos[ABPInst.currentItem].play();
 			}
 		}
@@ -419,12 +428,16 @@ var ABP = {
 			if (ABPInst.playing) return;
 			ABPInst.videos[ABPInst.currentItem].play();
 			addClass(ABPInst.btnPlay,"ABP-Pause");
-			ABPInst.playing = true;
+			console.log(ABPInst.cmManager);
+			//if (ABPInst.cmManager && ABPInst.cmManager.display) ABPInst.cmManager.startTimer();
+			//ABPInst.cmManager.start();
+			//ABPInst.playing = true;
 		};
 		ABPInst.pause = function() {
 			if (!ABPInst.playing) return;
 			ABPInst.videos[ABPInst.currentItem].pause();
 			removeClass(ABPInst.btnPlay,"ABP-Pause");
+			if (ABPInst.cmManager) ABPInst.cmManager.stopTimer();
 			ABPInst.playing = false;
 		};
 
@@ -482,6 +495,7 @@ var ABP = {
 			ABPInst.btnFullWin = playerUnit.getElementsByClassName("ABP-FullWindow")[0];
 			ABPInst.btnFullScr = playerUnit.getElementsByClassName("ABP-FullScreen")[0];
 			ABPInst.btnWide = playerUnit.getElementsByClassName("ABP-WideScreen")[0];
+			ABPInst.btnLoop = playerUnit.getElementsByClassName("ABP-Loop")[0];
 			ABPInst.divTextField = playerUnit.getElementsByClassName("ABP-Text")[0];
 			ABPInst.txtText = ABPInst.divTextField.getElementsByTagName("input")[0];
 			ABPInst.btnDm = playerUnit.getElementsByClassName("ABP-CommentShow")[0];
@@ -491,8 +505,8 @@ var ABP = {
 			if(typeof CommentManager !== "undefined"){
 				ABPInst.cmManager = new CommentManager(ABPInst.divComment);
 				ABPInst.cmManager.display = true;
-				ABPInst.cmManager.init();
-				ABPInst.cmManager.clear();
+				//ABPInst.cmManager.init();
+				//ABPInst.cmManager.clear();
 			}
 
 			function convTime(t) {
@@ -593,7 +607,7 @@ var ABP = {
 				});
 				v.addEventListener("ended", function() {
 					if (this.itemNo != ABPInst.currentItem) return;
-					if (this.itemNo<ABPInst.videos.length) {
+					if (this.itemNo<ABPInst.videos.length-1) {
 						changeItem(this.itemNo+1);
 						ABPInst.videos[this.itemNo+1].currentTime=0;
 						ABPInst.videos[this.itemNo+1].play();
@@ -642,11 +656,22 @@ var ABP = {
 			ABPInst.btnDm.addEventListener("click", function(){
 				if(ABPInst.cmManager.display == false){
 					ABPInst.cmManager.display = true;
+					ABPInst.cmManager.time(parseInt(ABPInst.currentTime*1000));
+					ABPInst.cmManager.clear();
 					ABPInst.cmManager.startTimer();
 				}else{
 					ABPInst.cmManager.display = false;
 					ABPInst.cmManager.clear();
 					ABPInst.cmManager.stopTimer();
+				}
+			});
+			ABPInst.btnLoop.addEventListener("click", function(){
+				if(!ABPInst.state.loop){
+					ABPInst.state.loop=true;
+					addClass(this,"ABP-Activated");
+				}else{
+					ABPInst.state.loop=false;
+					removeClass(this,"ABP-Activated");
 				}
 			});
 			ABPInst.btnPlay.addEventListener("click", function(){
@@ -692,13 +717,14 @@ var ABP = {
 			});
 
 			/* danmaku events */
+			/*
 			if (ABPInst.cmManager) {
 				for (var i=0;i<ABPInst.videos.length;i++) {
 					var v=ABPInst.videos[i];
 					//todo
 				}
 			}
-
+			*/
 			/* key events */
 			playerUnit.addEventListener("keydown", function(e){
 				if(e && e.keyCode == 32 && document.activeElement !== ABPInst.txtText){
