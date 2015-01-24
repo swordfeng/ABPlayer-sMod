@@ -34,6 +34,14 @@
 	display:none;
 }
 
+.ABP-Tooltip {
+	position:absolute;
+	min-height:15px;
+	min-width:10px;
+	z-index:5;
+	background:#FFF;
+	overflow:visible;
+}
 
 /** Video **/
 .ABP-Unit .ABP-Video{
@@ -130,6 +138,7 @@
 	overflow:auto;
 }
 
+
 .ABP-Unit .ABP-CommentSend{
 	width:75px;
 }
@@ -205,6 +214,25 @@
 .ABP-Unit .ABP-Control .volume-bar {
 	height:100%;
 	width:100px;
+}
+
+.ABP-Unit .ABP-Control .ABP-Opacity {
+	visibility:hidden;
+	position:absolute;
+	right:80px;
+	bottom:25px;
+	min-width:80px;
+	background:#FFF;
+}
+.ABP-Unit .ABP-Control .ABP-CommentShow:hover + .ABP-Opacity {
+	visibility:visible!important;
+}
+.ABP-Unit .ABP-Control .ABP-Opacity:hover {
+	visibility:visible!important;
+}
+.ABP-Unit .opacity-bar {
+	height:30px;
+	display:block;
 }
 
 .ABP-Unit .ABP-Control .bar{

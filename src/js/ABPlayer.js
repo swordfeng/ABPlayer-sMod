@@ -14,16 +14,34 @@ var ABP = {
 			elem = document.createElement(type);
 		}
 		for(var n in props){
-			if(n !== "style" && n !== "className"){
-				elem.setAttribute(n, props[n]);
+			if(n === "style"){
+				for(var x in props.style){
+					elem.style[x] = props.style[x];
+				}
 			}else if(n === "className"){
 				elem.className = props[n];
 			}else if (n === "html") {
 				elem.innerHTML = props[n];
-			} else {
-				for(var x in props.style){
-					elem.style[x] = props.style[x];
-				}
+			} else if (n === "tooltip") {
+				elem.tooltip = props[n];
+				addClass( elem.tooltip, "ABP-Tooltip");
+				elem.addEventListener("mouseover", function(e){
+					elem.parentElement.appendChild(elem.tooltip);
+					var pr=elem.parentElement.getBoundingClientRect();
+					var er=elem.getBoundingClientRect();
+					var tr=elem.tooltip.getBoundingClientRect();
+					elem.tooltip.style.left=(er.left-pr.left+er.width/2-tr.width/2)+"px";
+					elem.tooltip.style.top=(-tr.height-2)+"px";
+					if (typeof elem.updatetooltip !== "undefined" && elem.updatetooltip) elem.updatetooltip(e);
+				});
+				elem.addEventListener("mousemove", function(e){
+					if (typeof elem.updatetooltip !== "undefined" && elem.updatetooltip) elem.updatetooltip(e);
+				});
+				elem.addEventListener("mouseout", function(){
+					elem.tooltip.parentElement.removeChild(elem.tooltip);
+				});
+			}else {
+				elem.setAttribute(n, props[n]);
 			}
 		}
 		if (children) {
@@ -68,6 +86,81 @@ var ABP = {
 		}
 		return r;
 	}
+	var makeEvent= function(eventname) {
+		var evt = document.createEvent("HTMLEvents");
+		evt.initEvent(eventname, false, false);
+		return evt;
+	};
+	var makebar = function(elem) {
+		var  mainbar = _("div", {
+			"className": "dark"
+		});
+		var secondarybar = _("div", {
+			"className": "load"
+		});
+		var _bar = _("div", {
+			"className": "bar"
+		},[mainbar,secondarybar ]);
+		elem.appendChild(_bar);
+		var _main,_secondary;
+		elem.progress = {
+			get main() {
+				return _main;
+			},
+			set main(x) {
+				if (typeof x !== "number" || x<0 || x>100) return;
+				_main = x;
+				mainbar.style.width = x + "%";
+			},
+			get secondary() {
+				return _secondary;
+			},
+			set secondary(x) {
+				if (typeof x !== "number" || x<0 || x>100) return;
+				_secondary = x;
+				secondarybar.style.width = x + "%";
+			},
+		};
+		elem.progress.main = 0;
+		elem.progress.secondary = 0;
+		var dragging = false;
+		var dragrate;
+		_bar.addEventListener("mousedown", function(e){
+			dragging = true;
+			var pos = e.layerX;
+			if (typeof e.offsetX == "number") pos = e.offsetX;
+			if (pos>=0) dragrate=pos*100/this.offsetWidth;
+			elem.progress.main = dragrate;
+			elem.dispatchEvent(new Event("startdrag"));
+		});
+		document.addEventListener("mouseup", function(e){
+			if (dragging) {
+				dragging = false;
+				elem.dispatchEvent(new Event("stopdrag"));
+			}
+		});
+		_bar.addEventListener("mouseup", function(e){
+			dragging=false;
+			var pos = e.layerX;
+			if (typeof e.offsetX == "number") pos = e.offsetX;
+			if (pos>=0) dragrate=pos*100/this.offsetWidth;
+			elem.progress.main = dragrate;
+			elem.dispatchEvent(new Event("stopdrag"));
+		});
+		_bar.addEventListener("mousemove", function(e){
+			if(dragging) {
+				var pos = e.layerX;
+				if (typeof e.offsetX == "number") pos = e.offsetX;
+				if (pos>=0) {
+					dragrate=pos*100/this.offsetWidth;
+					elem.progress.main = dragrate;
+					elem.dispatchEvent(makeEvent("ondrag"));
+				}
+			}
+		});
+		return elem;
+	};
+
 
 	ABP.create = function (element, params) {
 		var elem = element;
@@ -88,8 +181,9 @@ var ABP = {
 			elem.innerHTML = "";
 		}
 		// 'elem' is the parent container in which we create the player.
+		var container;
 		if(!hasClass(elem, "ABP-Unit")){
-			var container = _("div", {
+			container = _("div", {
 				"className": "ABP-Unit",
 				"style":{
 					"width": params.width + "px",
@@ -161,7 +255,10 @@ var ABP = {
 						"className" : "button ABP-CommentColor"
 					}),
 					_("div", {
-						"className" : "button right ABP-CommentSend"
+						"className" : "button right ABP-CommentSend",
+						"tooltip":_("div",{
+							"html":"吃我电磁炮啦！",
+						}),
 					}),
 					_("div", {
 						"className": "ABP-TextBox autofill"
@@ -190,19 +287,21 @@ var ABP = {
 						"className": "button right ABP-Loop"
 					}),
 					_("div", {
-						"className": "button right ABP-CommentShow"
+						"className": "button right ABP-CommentShow",
 					}),
+					_("div",{
+						"className":"ABP-Opacity",
+					},[
+						_("div",{
+							"html":"弹幕透明度",
+						}),
+						_("div",{
+							"className":"opacity-bar",
+						}),
+					]),
 					_("div", {
 						"className": "volume-bar right"
-					},[
-						_("div", {
-							"className": "bar"
-						},[
-							_("div", {
-								"className": "load"
-							}),
-						])
-					]),
+					}),
 					_("div", {
 						"className": "button right ABP-VolumeButton"
 					}),
@@ -211,18 +310,7 @@ var ABP = {
 					}),
 					_("div", {
 						"className": "progress-bar autofill"
-					},[
-						_("div", {
-							"className": "bar"
-						},[
-							_("div", {
-								"className": "load"
-							}),
-							_("div", {
-								"className": "dark"
-							}),
-						])
-					]),
+					}),
 				]),
 			]),
 			_("div", {
@@ -248,7 +336,7 @@ var ABP = {
 				}),
 				_("div", {
 					"className":"date",
-					"html":"发送日期"
+					"html":"发送日期",
 				})
 			]),
 			_("div",{
@@ -276,10 +364,9 @@ var ABP = {
 	ABP.bind = function (playerUnit, mobile, state) {
 		var currentTime=0;
 		var dragging = false;
+		var waitting = false;
 		var ABPInst = {
 			btnPlay:null,
-			barTime:null,
-			barLoad:null,
 			divComment:null,
 			btnFullScr:null,
 			btnFullWin:null,
@@ -292,7 +379,6 @@ var ABP = {
 			txtText:null,
 			cmManager:null,
 			currentItem:0,
-			bufferedItem:0,
 			duration:0,
 			buffered:0,
 			defaults:{
@@ -357,7 +443,7 @@ var ABP = {
 			}
 			if (ABPInst.playing) {
 				if (ABPInst.cmManager && ABPInst.cmManager.display)
-					ABPInst.cmManager.startTimer();
+					ABPInst.cmManager.start();
 				ABPInst.videos[ABPInst.currentItem].play();
 			}
 		}
@@ -429,21 +515,18 @@ var ABP = {
 			ABPInst.videos[ABPInst.currentItem].play();
 			addClass(ABPInst.btnPlay,"ABP-Pause");
 			console.log(ABPInst.cmManager);
-			//if (ABPInst.cmManager && ABPInst.cmManager.display) ABPInst.cmManager.startTimer();
-			//ABPInst.cmManager.start();
-			//ABPInst.playing = true;
+			if (ABPInst.cmManager && ABPInst.cmManager.display) ABPInst.cmManager.start();
+			ABPInst.playing = true;
 		};
 		ABPInst.pause = function() {
 			if (!ABPInst.playing) return;
 			ABPInst.videos[ABPInst.currentItem].pause();
 			removeClass(ABPInst.btnPlay,"ABP-Pause");
-			if (ABPInst.cmManager) ABPInst.cmManager.stopTimer();
+			if (ABPInst.cmManager) ABPInst.cmManager.stop();
 			ABPInst.playing = false;
 		};
 
 		/*
-		 :wq
-
 			 ABPInst.swapVideo = function(video){
 				 if(ABPInst.cmManager){
 					 ABPInst.cmManager.clear();
@@ -462,23 +545,6 @@ var ABP = {
 						 }
 						 ABPInst.cmManager.time(Math.floor(video.currentTime * 1000));
 					 });
-					 video.addEventListener("ratechange", function(){
-						 if(ABPInst.cmManager.def.globalScale != null){
-							 if(video.playbackRate !== 0){
-								 ABPInst.cmManager.def.globalScale = (1 / video.playbackRate);
-								 ABPInst.cmManager.rescale();
-							 }
-						 }
-					 });
-					 video.addEventListener("pause", function(){
-						 ABPInst.cmManager.stopTimer();
-					 });
-					 video.addEventListener("waiting", function(){
-						 ABPInst.cmManager.stopTimer();
-					 });
-					 video.addEventListener("playing",function(){
-						 ABPInst.cmManager.startTimer();
-					 });
 				 }
 			 };
 			 */
@@ -488,14 +554,13 @@ var ABP = {
 			/* start binding */
 			ABPInst.videos = playerUnit.getElementsByClassName("ABP-VideoItem");
 			ABPInst.btnPlay = playerUnit.getElementsByClassName("ABP-Play")[0];
-			var pbar = playerUnit.getElementsByClassName("progress-bar");
-			ABPInst.barHitArea = pbar[0].getElementsByClassName("bar")[0];
-			ABPInst.barTime = pbar[0].getElementsByClassName("dark")[0];
-			ABPInst.barLoad = pbar[0].getElementsByClassName("load")[0];
+			ABPInst.barProgress = makebar(playerUnit.getElementsByClassName("progress-bar")[0]);
 			ABPInst.btnFullWin = playerUnit.getElementsByClassName("ABP-FullWindow")[0];
 			ABPInst.btnFullScr = playerUnit.getElementsByClassName("ABP-FullScreen")[0];
 			ABPInst.btnWide = playerUnit.getElementsByClassName("ABP-WideScreen")[0];
 			ABPInst.btnLoop = playerUnit.getElementsByClassName("ABP-Loop")[0];
+			ABPInst.barVolume = makebar(playerUnit.getElementsByClassName("volume-bar")[0]);
+			ABPInst.barOpacity = makebar(playerUnit.getElementsByClassName("opacity-bar")[0]);
 			ABPInst.divTextField = playerUnit.getElementsByClassName("ABP-Text")[0];
 			ABPInst.txtText = ABPInst.divTextField.getElementsByTagName("input")[0];
 			ABPInst.btnDm = playerUnit.getElementsByClassName("ABP-CommentShow")[0];
@@ -505,8 +570,8 @@ var ABP = {
 			if(typeof CommentManager !== "undefined"){
 				ABPInst.cmManager = new CommentManager(ABPInst.divComment);
 				ABPInst.cmManager.display = true;
-				//ABPInst.cmManager.init();
-				//ABPInst.cmManager.clear();
+				ABPInst.cmManager.init();
+				ABPInst.cmManager.clear();
 			}
 
 			function convTime(t) {
@@ -520,17 +585,9 @@ var ABP = {
 				this.innerHTML = convTime(t)+"/"+convTime(ABPInst.duration);
 			}
 
-			var barSetRate = function(r) {
-				this.style.width=r*100+"%";
+			var time2rate = function(t) {
+				return t*100/ABPInst.duration;
 			}
-			var barSetTime = function(t) {
-				var r=t/ABPInst.duration;
-				this.setRate(r);
-			}
-			ABPInst.barTime.setRate = barSetRate;
-			ABPInst.barTime.setTime = barSetTime;
-			ABPInst.barLoad.setRate = barSetRate;
-			ABPInst.barLoad.setTime = barSetTime;
 
 			/* set events */
 
@@ -555,10 +612,7 @@ var ABP = {
 						ABPInst.timeLabel.setTime(0);
 						if (ABPInst.onReady) ABPInst.onReady();
 					}
-					var progevent=document.createEvent("HTMLEvents");
-					progevent.initEvent("progress",true,false);
-					progevent.eventType="message";
-					this.dispatchEvent(progevent);
+					ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
 				});
 				v.addEventListener("progress", function(){
 					var buff;
@@ -567,19 +621,16 @@ var ABP = {
 					} catch(e) {
 						return;
 					}
-					if (this.duration-this.buffered.end(0)<0.5) {
-						if (this.buffComplete) return;
-						else this.buffComplete=true;
+					var firsttime = this.buffComplete;
+					if (this.duration-this.buffered.end(0)<0.05) {
+						this.buffComplete=true;
 					} else this.buffComplete=false;
 					for (var ii=0;ii<this.itemNo;ii++) {
-						try {
-							if(!ABPInst.videos[ii].buffComplete)
-								return;
-						} catch(e) { return; }
+						if(!ABPInst.videos[ii].buffComplete) return;
 						buff+=ABPInst.videos[ii].duration;
 					}
 					ABPInst.buffered=buff;
-					if (this.buffComplete) { // now it's the first time
+					if (firsttime) { // now it's the first time
 						var ii=this.itemNo+1;
 						while (ii<ABPInst.videos.length&&ABPInst.videos[ii].buffComplete) {
 							ABPInst.buffered += ABPInst.videos[ii].duration;
@@ -592,17 +643,25 @@ var ABP = {
 							if (ABPInst.onBuffered) ABPInst.onBuffered();
 						}
 					}
-					ABPInst.barLoad.setTime(buff);
+					ABPInst.barProgress.progress.secondary=time2rate(buff);
 					if (ABPInst.onProgress) ABPInst.onProgress();
 				});
 				v.addEventListener("timeupdate", function() {
 					if (this.itemNo != ABPInst.currentItem) return;
+					if (waitting && ABPInst.cmManager) ABPInst.cmManager.start();
+					waitting = false;
 					var nowtime=this.currentTime;
 					for (var ii=0;ii<this.itemNo;ii++) nowtime+=ABPInst.videos[ii].duration;
 					currentTime=nowtime;
 					if (!dragging) {
 						ABPInst.timeLabel.setTime(nowtime);
-						ABPInst.barTime.setTime(nowtime);
+						ABPInst.barProgress.progress.main=time2rate(nowtime);
+					}
+				});
+				v.addEventListener("waitting", function(){
+					if (this.itemNo == ABPInst.currentItem) {
+						if ((!waitting) && ABPInst.cmManager)  ABPInst.cmManager.stop();
+						waitting = true;
 					}
 				});
 				v.addEventListener("ended", function() {
@@ -682,49 +741,31 @@ var ABP = {
 				}
 			});
 			//progress bar
-			var dragrate;
-			ABPInst.barTime.style.width = "0%";
-			ABPInst.barHitArea.addEventListener("mousedown", function(e){
-				dragging = true;
-				var pos = e.layerX;
-				if (typeof e.offsetX == "number") pos = e.offsetX;
-				if (pos>=0) dragrate=pos/ABPInst.barHitArea.offsetWidth;
-
+			ABPInst.barProgress.addEventListener("stopdrag", function(){
+				seekto(this.progress.main / 100 * ABPInst.duration);
 			});
-			document.addEventListener("mouseup", function(e){
-				if (dragging) {
-					dragging = false;
-					seekto(dragrate * ABPInst.duration);
-				}
-			});
-			ABPInst.barHitArea.addEventListener("mouseup", function(e){
-				dragging=false;
-				var pos = e.layerX;
-				if (typeof e.offsetX == "number") pos = e.offsetX;
-				if (pos>=0) dragrate=pos/ABPInst.barHitArea.offsetWidth;
-				seekto(dragrate * ABPInst.duration);
-			});
-			ABPInst.barHitArea.addEventListener("mousemove", function(e){
-				if(dragging) {
-					var pos = e.layerX;
-					if (typeof e.offsetX == "number") pos = e.offsetX;
-					if (pos>=0) {
-						dragrate=pos/ABPInst.barHitArea.offsetWidth;
-						ABPInst.timeLabel.setTime(dragrate*ABPInst.duration);
-						ABPInst.barTime.setRate(dragrate);
-					}
-				}
+			ABPInst.barProgress.addEventListener("ondrag", function(){
+				ABPInst.timeLabel.setTime(this.progress.main/100*ABPInst.duration);
 			});
 
-			/* danmaku events */
-			/*
-			if (ABPInst.cmManager) {
+			//volume bar
+			ABPInst.barVolume.progress.main=100;
+			ABPInst.barVolume.addEventListener("stopdrag", function(){
 				for (var i=0;i<ABPInst.videos.length;i++) {
-					var v=ABPInst.videos[i];
-					//todo
+					ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
 				}
-			}
-			*/
+			});
+			ABPInst.barVolume.addEventListener("ondrag", function(){
+				for (var i=0;i<ABPInst.videos.length;i++) {
+					ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
+				}
+			});
+			//opacity bar
+			//todo
+			//
+			/* danmaku events */
+			//todo 
+
 			/* key events */
 			playerUnit.addEventListener("keydown", function(e){
 				if(e && e.keyCode == 32 && document.activeElement !== ABPInst.txtText){
@@ -732,6 +773,8 @@ var ABP = {
 					e.preventDefault();
 				}
 			});
+
+
 				/*
 			 //bar
 			 if(Math.abs(newTime - ABPInst.video.currentTime) > 4){
