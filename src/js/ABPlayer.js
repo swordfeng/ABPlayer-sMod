@@ -100,7 +100,7 @@ var ABP = {
 		});
 		var _bar = _("div", {
 			"className": "bar"
-		},[mainbar,secondarybar ]);
+		},[secondarybar,mainbar ]);
 		elem.appendChild(_bar);
 		var _main,_secondary;
 		elem.progress = {
