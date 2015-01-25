@@ -1,5 +1,5 @@
 var ABP = {
-	"version":"0.8.0.1-smod_bili"
+	"version":"0.8.0.1-sMod_bili"
 };
 
 (function(){
