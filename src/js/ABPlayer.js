@@ -26,16 +26,22 @@ var ABP = {
 				elem.tooltip = props[n];
 				addClass( elem.tooltip, "ABP-Tooltip");
 				elem.addEventListener("mouseover", function(e){
-					elem.parentElement.appendChild(elem.tooltip);
-					var pr=elem.parentElement.getBoundingClientRect();
+					document.body.appendChild(elem.tooltip);
+					var pr=document.documentElement.getBoundingClientRect();
 					var er=elem.getBoundingClientRect();
 					var tr=elem.tooltip.getBoundingClientRect();
 					if (er.bottom+5+tr.height<document.documentElement.clientHeight) {
 						elem.tooltip.style.left=(er.left-pr.left+er.width/2-tr.width/2)+"px";
 						elem.tooltip.style.top=(er.bottom-pr.top+2)+"px";
 					} else {
-						elem.tooltip.style.left=(er.left+-pr.left+er.width+2)+"px";
+						elem.tooltip.style.left=(er.left-pr.left+er.width+2)+"px";
 						elem.tooltip.style.top=(er.top-pr.top+er.height/2-tr.height/2)+"px";
+					}
+					var tr=elem.tooltip.getBoundingClientRect();
+					if (tr.right>document.documentElement.clientWidth) {
+						elem.tooltip.style.left=(er.left-pr.left-tr.width-2)+"px";
+					} else if (tr.left<0) {
+						elem.tooltip.style.left=(er.left-pr.left+er.width+2)+"px";
 					}
 					if (typeof elem.updatetooltip !== "undefined" && elem.updatetooltip) elem.updatetooltip(e);
 				});
@@ -43,7 +49,7 @@ var ABP = {
 					if (typeof elem.updatetooltip !== "undefined" && elem.updatetooltip) elem.updatetooltip(e);
 				});
 				elem.addEventListener("mouseout", function(){
-					elem.tooltip.parentElement.removeChild(elem.tooltip);
+					document.body.removeChild(elem.tooltip);
 				});
 			} else if (n === "updatetooltip") {
 				elem.updatetooltip = props[n];
@@ -98,17 +104,27 @@ var ABP = {
 		evt.initEvent(eventname, false, false);
 		return evt;
 	};
-	var makebar = function(elem) {
+	var makebar = function(elem, updatetooltip) {
 		var  mainbar = _("div", {
 			"className": "dark"
 		});
 		var secondarybar = _("div", {
 			"className": "load"
 		});
-		var _bar = _("div", {
-			"className": "bar"
-		},[secondarybar,mainbar ]);
+		var _bar;
+		if (typeof updatetooltip !== "undefined") {
+			_bar = _("div", {
+				"className": "bar",
+				"tooltip":_("div",{}),
+				"updatetooltip":updatetooltip,
+			},[secondarybar,mainbar ]);
+		} else {
+			_bar = _("div", {
+				"className": "bar"
+			},[secondarybar,mainbar ]);
+		}
 		elem.appendChild(_bar);
+		elem.bar = _bar;
 		var _main,_secondary;
 		elem.progress = {
 			get main() {
@@ -134,9 +150,8 @@ var ABP = {
 		var dragrate;
 		_bar.addEventListener("mousedown", function(e){
 			dragging = true;
-			var pos = e.layerX;
-			if (typeof e.offsetX == "number") pos = e.offsetX;
-			if (pos>=0) dragrate=pos*100/this.offsetWidth;
+			var pos = e.clientX-this.getBoundingClientRect().left;
+			if (pos>=0 && pos<=this.offsetWidth) dragrate=pos*100/this.offsetWidth;
 			elem.progress.main = dragrate;
 			elem.dispatchEvent(new Event("startdrag"));
 		});
@@ -148,17 +163,15 @@ var ABP = {
 		});
 		_bar.addEventListener("mouseup", function(e){
 			dragging=false;
-			var pos = e.layerX;
-			if (typeof e.offsetX == "number") pos = e.offsetX;
-			if (pos>=0) dragrate=pos*100/this.offsetWidth;
+			var pos = e.clientX-this.getBoundingClientRect().left;
+			if (pos>=0 && pos<=this.offsetWidth) dragrate=pos*100/this.offsetWidth;
 			elem.progress.main = dragrate;
 			elem.dispatchEvent(new Event("stopdrag"));
 		});
 		_bar.addEventListener("mousemove", function(e){
 			if(dragging) {
-				var pos = e.layerX;
-				if (typeof e.offsetX == "number") pos = e.offsetX;
-				if (pos>=0) {
+				var pos = e.clientX-this.getBoundingClientRect().left;
+				if (pos>=0 && pos<=this.offsetWidth) {
 					dragrate=pos*100/this.offsetWidth;
 					elem.progress.main = dragrate;
 					elem.dispatchEvent(makeEvent("ondrag"));
@@ -168,6 +181,22 @@ var ABP = {
 		return elem;
 	};
 
+	
+	var convTime = function(t) {
+		var sec=parseInt(t);
+		var min=parseInt(sec/60);
+		sec%=60;
+		return min+":"+(sec<10?"0":"")+sec;
+	}
+
+	var pad0 = function(num, n) {  
+		var len = num.toString().length;  
+		while(len < n) {  
+			num = "0" + num;  
+			len++;  
+		}  
+		return num;  
+	} 
 
 	ABP.create = function (element, params) {
 		var elem = element;
@@ -176,8 +205,8 @@ var ABP = {
 		}
 		params = buildFromDefaults(params,{
 			"replaceMode":true,
-			"width":512,
-			"height":384,
+			"width":1280,
+			"height":640,
 			"src":"",
 			"mobile":false
 		});
@@ -237,10 +266,11 @@ var ABP = {
 		}else{
 			playlist.push(params.src);
 		}
-		var _video=[_("div", {
-			"className":"ABP-Container"
-		})];
+		var _video=[];
 		for (var i=0;i<playlist.length;i++) _video.push(playlist[i]);
+		_video.push(_("div", {
+			"className":"ABP-Container"
+		}));
 		container.appendChild(_("div",{
 			"className":"ABP-Player"
 		},[
@@ -258,13 +288,13 @@ var ABP = {
 					_("div", {
 						"className" : "button ABP-CommentFont",
 						"tooltip":_("div",{
-							"html":"弹幕字体设置",
+							"html":"弹幕大小与弹幕模式",
 						}),
 					}),
 					_("div", {
 						"className" : "button ABP-CommentColor",
 						"tooltip":_("div",{
-							"html":"弹幕颜色设置",
+							"html":"弹幕颜色",
 						}),
 					}),
 					_("div", {
@@ -272,6 +302,7 @@ var ABP = {
 						"tooltip":_("div",{
 							"html":"毁灭地喷射白光！da！",
 						}),
+						"html":"发送 >",
 					}),
 					_("div", {
 						"className": "ABP-TextBox autofill",
@@ -324,14 +355,17 @@ var ABP = {
 						"className":"ABP-Opacity",
 					},[
 						_("div",{
-							"html":"弹幕透明度",
+							"html":"透明度",
 						}),
 						_("div",{
 							"className":"opacity-bar",
 						}),
 					]),
 					_("div", {
-						"className": "volume-bar right"
+						"className": "volume-bar right",
+						"tooltip":_("div",{
+							"html":"音量调节",
+						}),
 					}),
 					_("div", {
 						"className": "button right ABP-VolumeButton",
@@ -340,13 +374,10 @@ var ABP = {
 						}),
 					}),
 					_("div", {
-						"className": "right ABP-TimeLabel"
+						"className": "right ABP-TimeLabel",
 					}),
 					_("div", {
 						"className": "progress-bar autofill",
-						"tooltip":_("div",{
-							"html":"",
-						}),
 					}),
 				]),
 			]),
@@ -391,9 +422,37 @@ var ABP = {
 			//todo
 		]));
 		var bind = ABP.bind(container, params.mobile);
+		if (typeof ABP_Restyle !== "undefined") ABP_Restyle();
 		if (params.src.hasOwnProperty("danmaku")) {
-			CommentLoader(params.src.danmaku, bind.cmManager);
-			console.log(bind.cmManager);
+			CommentLoader(params.src.danmaku, bind.cmManager, function(){
+				var pCommentList = container.getElementsByClassName("ABP-CommentList-Container")[0];
+				for (var i=0;i<bind.cmManager.timeline.length;i++) {
+					var d = new Date(bind.cmManager.timeline[i].date*1000);
+					var node = _("div",{
+						"className":"ABP-CommentList-Item",
+					},[
+						_("div", {
+							"className":"time",
+							"html":convTime(parseInt(bind.cmManager.timeline[i].stime/1000)),
+						}),
+						_("div", {
+							"className":"content",
+							"html":bind.cmManager.timeline[i].text,
+							"tooltip":_("div",{
+								"html":bind.cmManager.timeline[i].text,
+							}),
+						}),
+						_("div", {
+							"className":"date",
+							"html":d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2),
+							"tooltip":_("div",{
+								"html":d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2)+":"+pad0(d.getSeconds(),2),
+							}),
+						})
+					]);
+					pCommentList.appendChild(node);
+				}
+			});
 		}
 		return bind;
 	}
@@ -404,7 +463,7 @@ var ABP = {
 		var dragging = false;
 		var waitting = false;
 		var eventListeners = [];
-		
+		var mutevol = 100;
 		// public instance
 		var ABPInst = {
 			btnPlay:null,
@@ -434,6 +493,7 @@ var ABP = {
 				autosize: false,
 				loop:false,
 				danmaku:true,
+				mute:false,
 			}),
 			createPopup:null,
 			removePopup:null,
@@ -487,12 +547,6 @@ var ABP = {
 					ABPInst.cmManager.startTimer();
 				ABPInst.videos[ABPInst.currentItem].play();
 			}
-		}
-		function convTime(t) {
-			var sec=parseInt(t);
-			var min=parseInt(sec/60);
-			sec%=60;
-			return min+":"+(sec<10?"0":"")+sec;
 		}
 		var time2rate = function(t) {
 			return t*100/ABPInst.duration;
@@ -574,8 +628,8 @@ var ABP = {
 				}
 			}
 			addClass(playerUnit, "ABP-Screen");
-			ABPInst.state.fullscreen=true;
 			if (ABPInst.cmManager) ABPInst.cmManager.setBounds();
+			setTimeout(function(){ABPInst.state.fullscreen=true;},100);
 		};
 
 		// player controls
@@ -616,6 +670,19 @@ var ABP = {
 			ABPInst.state.danmaku = x;
 		};
 
+		ABPInst.mute = function(x) {
+			if (x == ABPInst.state.mute) return;
+			ABPInst.state.mute = x;
+			if (x) {
+				mutevol = ABPInst.barVolume.progress.main;
+				ABPInst.barVolume.progress.main = 0;
+				addClass(ABPInst.btnVolume, "muted");
+			} else {
+				ABPInst.barVolume.progress.main = mutevol;
+				removeClass(ABPInst.btnVolume, "muted");
+			}
+		};
+
 
 		ABPInst.addListener("play",function(){
 			addClass(ABPInst.btnPlay,"ABP-Playing");
@@ -632,13 +699,14 @@ var ABP = {
 		/* start binding */
 		ABPInst.videos = playerUnit.getElementsByClassName("ABP-VideoItem");
 		ABPInst.btnPlay = playerUnit.getElementsByClassName("ABP-Play")[0];
-		ABPInst.barProgress = makebar(playerUnit.getElementsByClassName("progress-bar")[0]);
+		ABPInst.barProgress = makebar(playerUnit.getElementsByClassName("progress-bar")[0],null);
 		ABPInst.btnFullWin = playerUnit.getElementsByClassName("ABP-FullWindow")[0];
 		ABPInst.btnFullScr = playerUnit.getElementsByClassName("ABP-FullScreen")[0];
 		ABPInst.btnWide = playerUnit.getElementsByClassName("ABP-WideScreen")[0];
 		ABPInst.btnLoop = playerUnit.getElementsByClassName("ABP-Loop")[0];
+		ABPInst.btnVolume = playerUnit.getElementsByClassName("ABP-VolumeButton")[0];
 		ABPInst.barVolume = makebar(playerUnit.getElementsByClassName("volume-bar")[0]);
-		ABPInst.barOpacity = makebar(playerUnit.getElementsByClassName("opacity-bar")[0]);
+		ABPInst.barOpacity = makebar(playerUnit.getElementsByClassName("opacity-bar")[0],null);
 		ABPInst.divTextField = playerUnit.getElementsByClassName("ABP-Text")[0];
 		ABPInst.txtText = ABPInst.divTextField.getElementsByTagName("input")[0];
 		ABPInst.btnDm = playerUnit.getElementsByClassName("ABP-CommentShow")[0];
@@ -688,7 +756,7 @@ var ABP = {
 					ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
 				});
 				v.addEventListener("progress", function(){
-					console.log(this.itemNo);
+					console.log("on progress");
 					var buff;
 					try{
 						buff = this.buffered.end(0);
@@ -796,7 +864,21 @@ var ABP = {
 			ABPInst.barProgress.addEventListener("ondrag", function(){
 				ABPInst.timeLabel.setTime(this.progress.main/100*ABPInst.duration);
 			});
-
+			ABPInst.barProgress.bar.updatetooltip = function(e) {
+				var pos = e.clientX-this.getBoundingClientRect().left;
+				if (pos>=0 && pos<=this.offsetWidth) {
+					this.tooltip.innerHTML = convTime(pos*ABPInst.duration/this.offsetWidth);
+				}
+				var pr = document.body.getBoundingClientRect();
+				var er = this.getBoundingClientRect();
+				var tr = this.tooltip.getBoundingClientRect();
+				this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
+				this.tooltip.style.top = (er.top-pr.top-tr.height+2)+"px";
+			};
+			// mute button
+			ABPInst.btnVolume.addEventListener("click", function(){
+				ABPInst.mute(!ABPInst.state.mute);
+			});
 			//volume bar
 			ABPInst.barVolume.progress.main=100;
 			ABPInst.barVolume.addEventListener("stopdrag", function(){
@@ -809,6 +891,9 @@ var ABP = {
 					ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
 				}
 			});
+			ABPInst.barVolume.addEventListener("startdrag", function(){
+				ABPInst.mute(false);
+			});
 			//opacity bar
 			ABPInst.barOpacity.progress.main=100;
 			ABPInst.barOpacity.addEventListener("stopdrag",function(){
@@ -817,6 +902,16 @@ var ABP = {
 			ABPInst.barOpacity.addEventListener("ondrag",function(){
 				ABPInst.cmManager.options.global.opacity = ABPInst.barOpacity.progress.main/100;
 			});
+			ABPInst.barOpacity.bar.updatetooltip = function(e) {
+				var pos = e.clientX-this.getBoundingClientRect().left;
+				if (pos>=0 && pos<=this.offsetWidth) {
+					this.tooltip.innerHTML = parseInt(pos/this.offsetWidth*100)/100;
+				}
+				var pr = document.body.getBoundingClientRect();
+				var er = this.getBoundingClientRect();
+				var tr = this.tooltip.getBoundingClientRect();
+				this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
+			};
 
 			//
 			/* danmaku events */

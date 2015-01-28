@@ -1,9 +1,6 @@
-
 /** Global **/
 .ABP-Unit{
 	position:relative;
-	/*color:#444;*/
-	/*background:#fff;*/
 	font-size:16px;
 	border:none;
 }
@@ -25,7 +22,6 @@
 .ABP-Unit .ABP-Player{
 	position:absolute;
 	top:0;left:0;right:300px;bottom:0;
-	background:#CCC;
 }
 .ABP-Unit.ABP-Wide .ABP-Player{
 	right:0;
@@ -34,6 +30,7 @@
 	display:none;
 }
 
+/** Tip **/
 .ABP-Tooltip {
 	position:absolute;
 	min-height:15px;
@@ -42,10 +39,20 @@
 	background:#FFF;
 	overflow:visible;
 	word-break:keep-all;
+	white-space:nowrap;
 	font-size:12px;
-	padding:2px;
 	border-radius:3px;
 	opacity:0.8;
+	border:#CCC solid 1px;
+	box-shadow: 3px 3px 3px #000;
+}
+
+/** Side blocks **/
+.ABP-Unit .ABP-SideBlock {
+	position:absolute;
+	width:300px;
+	right:0;
+	background:#CCC;
 }
 
 /** Video **/
@@ -62,7 +69,6 @@
 	position:absolute;
 	width:100%;
 	height:100%;
-	z-index:-1;
 }
 .ABP-Unit .ABP-Video .ABP-VideoItemHidden {
 	display:none;
@@ -119,8 +125,7 @@
 /** Controls **/
 .ABP-Unit .button{
 	overflow:hidden;
-	background:#F00;
-	width:35px;
+	width:25px;
 	top:0;
 	bottom:0;
 	height:100%;
@@ -129,14 +134,12 @@
 	background-position:center;
 	background-size:contain;
 	background-repeat:no-repeat;
+	background-color:inherit;
 	-webkit-transition: background-color 0.2s ease-in-out;
 	-moz-transition: background-color 0.2s ease-in-out;
 	-ms-transition: background-color 0.2s ease-in-out;
 	-o-transition: background-color 0.2s ease-in-out;
 	transition: background-color 0.2s ease-in-out;
-}
-.ABP-Unit .button:hover{
-	background-color:#6cf;
 }
 .ABP-Unit .right{
 	float:right;
@@ -147,14 +150,52 @@
 	overflow:auto;
 }
 
+.ABP-Unit .bar{
+	top:50%;
+	height:6px;
+	margin:-3px 8px 0 8px;
+	border-radius:6px;
+	position:relative;
+	background:#858585;
+}
+.ABP-Unit .bar .dark{
+	position:absolute;
+	background:#00a1d6;
+	height:100%;
+	border-radius:6px;
+	opacity:1;
+}
+.ABP-Unit .bar .dark:before{
+	height:12px;
+	width:12px;
+	border:#ddd solid 1px;
+	border-radius:12px;
+	background-color:#fff;
+	position:absolute;
+	top:-4px;
+	right:-6px;
+	content: "";
+}
+.ABP-Unit .bar .dark:after{
+	height:6px;
+	width:6px;
+	border:#ddd solid 1px;
+	border-radius:6px;
+	background-color:#00a1d6;
+	position:absolute;
+	top:-1px;
+	right:-3px;
+	content: "";
+	box-shadow:0 0 5px #ddd;
+}
+.ABP-Unit .bar .load{
+	position:absolute;
+	background:#00a1d6;
+	height:100%;
+	border-radius:6px;
+	opacity:1;
+}
 
-.ABP-Unit .ABP-CommentSend{
-	width:75px;
-}
-.ABP-Unit .ABP-CommentSend:before {
-	content:"发送";
-	text-align:center;
-}
 
 .ABP-Unit.ABP-Screen .ABP-Toolbar {
 	opacity:0;
@@ -163,73 +204,99 @@
 	opacity:1!important;
 }
 
-.ABP-Unit .ABP-Text{
-	position:absolute;
-	bottom:0px;left:0;right:0;
-	height:25px;
-	padding:0;
-	border:#ececec solid 1px;
-}
 
-.ABP-Unit .ABP-Text .ABP-TextBox input[type=text]{
-	background:transparent;
-	border:none;
-	padding:0;margin:0;
-	display:block;
-	vertical-align: middle;
-	color:#33b5e5;
-	border:none;
-	font-family: monospace;
-	font-size:18px;
-	height:100%;
-	width:100%;
-}
-
-.ABP-Unit .ABP-Control{
+/** Control bar **/
+.ABP-Unit .ABP-Control {
+	border:1px solid #eee;
+	background-color:#fff;
 	position:absolute;
 	bottom:25px;left:0;right:0;
-	opacity:0.9;
 	height:25px;
-	border:#ececec solid 1px;
 	-moz-user-select: -moz-none;
 	-khtml-user-select: none;
 	-webkit-user-select: none;
 	-o-user-select: none;
 	user-select: none;
 }
-
-
-.ABP-Unit .ABP-Play:{
-	background-image:url(play.png);
+/* play button */
+.ABP-Unit .ABP-Play{
+	border-right:1px solid #eee;
+	background-image:url(play.svg);
+	width:35px;
 }
-
+.ABP-Unit .ABP-Play:hover{
+	background-image:url(play-hover.svg);
+}
 .ABP-Unit .ABP-Control .ABP-Play.ABP-Playing{
-	background-image:url(pause.png);
+	background-image:url(pause.svg);
 	background-size:contain;
 }
-
-.ABP-Unit .ABP-Control .ABP-FullScreen{
-	background-image:url(fullscreen.png);
-	background-size:contain;
+.ABP-Unit .ABP-Control .ABP-Play.ABP-Playing:hover{
+	background-image:url(pause-hover.svg);
 }
 
-.ABP-Unit .ABP-Control .ABP-CommentShow{
-	background-image:url(danmaku.png?);
-	background-size:contain;
+/* progress bar */
+.ABP-Unit .ABP-Control .progress-bar .dark {
+	background-color:#007caf;
 }
 
+/* time label */
+.ABP-Unit .ABP-Control .ABP-TimeLabel{
+	width:80px;
+	height:100%;
+	line-height:25px;
+	position:relative;
+	font-size:12px;
+	text-align:center;
+	overflow:hidden;
+	margin-left:-5px;
+}
+
+/* volume button */
+.ABP-Unit .ABP-Control .ABP-VolumeButton {
+	background-image:url(volume.svg);
+}
+.ABP-Unit .ABP-Control .ABP-VolumeButton:hover {
+	background-image:url(volume-hover.svg);
+}
+.ABP-Unit .ABP-Control .ABP-VolumeButton.muted {
+	background-image:url(mute.svg);
+}
+.ABP-Unit .ABP-Control .ABP-VolumeButton.muted:hover {
+	background-image:url(mute-hover.svg);
+}
+
+
+/* volume bar */
 .ABP-Unit .ABP-Control .volume-bar {
 	height:100%;
 	width:100px;
 }
 
+/* comment switch button */
+.ABP-Unit .ABP-Control .ABP-CommentShow{
+	background-image:url(danmaku-act.svg);
+}
+.ABP-Unit .ABP-Control .ABP-CommentShow.ABP-DanmakuOff{
+	background-image:url(danmaku.svg);
+}
+.ABP-Unit .ABP-Control .ABP-CommentShow:hover{
+	background-image:url(danmaku-hover.svg);
+}
+
+/* comment opacity box */
 .ABP-Unit .ABP-Control .ABP-Opacity {
 	visibility:hidden;
 	position:absolute;
-	right:80px;
+	right:60px;
 	bottom:25px;
 	min-width:80px;
 	background:#FFF;
+	font-size:14px;
+	padding:5px;
+	border-radius:5px;
+	border:#CCC solid 1px;
+	box-shadow: 3px 3px 3px #000;
 }
 .ABP-Unit .ABP-Control .ABP-CommentShow:hover + .ABP-Opacity {
 	visibility:visible!important;
@@ -242,47 +309,54 @@
 	display:block;
 }
 
-.ABP-Unit .ABP-Control .bar{
-	top:50%;
-	height:6px;
-	margin:-3px 10px 0 10px;
-	border-radius:6px;
-	position:relative;
-	background:#002222;
+/* loop button */
+.ABP-Unit .ABP-Control .ABP-Loop{
+	background-image:url(loop.svg);
+}
+.ABP-Unit .ABP-Control .ABP-Loop.ABP-LoopOn{
+	background-image:url(loop-act.svg);
+}
+.ABP-Unit .ABP-Control .ABP-Loop:hover{
+	background-image:url(loop-hover.svg);
 }
 
-.ABP-Unit .ABP-Control .bar .dark{
-	position:absolute;
-	background:#0044CC;
-	height:100%;
-	border-radius:6px;
-	opacity:1;
+/* widescreen button */
+.ABP-Unit .ABP-Control .ABP-WideScreen{
+	background-image:url(wide.svg);
+}
+.ABP-Unit.ABP-Wide .ABP-Control .ABP-WideScreen{
+	background-image:url(wide-act.svg);
+}
+.ABP-Unit .ABP-Control .ABP-WideScreen:hover{
+	background-image:url(wide-hover.svg);
 }
 
-.ABP-Unit .ABP-Control .bar .dark:before{
-	height:10px;
-	width:10px;
-	border-radius:10px;
-	border:#000 solid 1px;
-	border-radius:6px;
+/* fullscreen button */
+.ABP-Unit .ABP-Control .ABP-FullScreen{
+	background-image:url(fullscr.svg);
+}
+.ABP-Unit.ABP-Full.ABP-Screen .ABP-Control .ABP-FullScreen{
+	background-image:url(fullscr-act.svg);
+}
+.ABP-Unit .ABP-Control .ABP-FullScreen:hover{
+	background-image:url(fullscr-hover.svg);
 }
 
-.ABP-Unit .ABP-Control .bar .dark:after{
+/* fullwindow button */
+.ABP-Unit .ABP-Control .ABP-FullWindow{
+	background-image:url(fullwin.svg);
 }
-.ABP-Unit .ABP-Control .bar .load{
-	position:absolute;
-	background:#4399ee;
-	height:100%;
-	border-radius:6px;
-	opacity:1;
+.ABP-Unit.ABP-Full .ABP-Control .ABP-FullWindow{
+	background-image:url(fullwin-act.svg);
+}
+.ABP-Unit.ABP-Full.ABP-Screen .ABP-Control .ABP-FullWindow{
+	background-image:url(fullwin.svg);
+}
+.ABP-Unit .ABP-Control .ABP-FullWindow:hover{
+	background-image:url(fullwin-hover.svg);
 }
 
-
-.ABP-Unit .ABP-Control .ABP-TimeLabel{
-	width:50px;
-	height:100%;
-	position:relative;
-}
+/* full screen & window button hovering */
 .ABP-Unit .ABP-Control .ABP-FullWindow {
 	position:absolute;
 	right:0;
@@ -298,6 +372,105 @@
 	visibility:visible!important;
 }
 
+/** Text bar **/
+.ABP-Unit .ABP-Text{
+	border:1px solid #eee;
+	background-color:#fff;
+	position:absolute;
+	bottom:0px;left:0;right:0;
+	height:25px;
+	padding:0;
+}
+
+/* comment font button */
+.ABP-Unit .ABP-CommentFont {
+	background-image:url(font.svg);
+}
+.ABP-Unit .ABP-CommentFont:hover {
+	background-image:url(font-hover.svg);
+}
+/* comment color button */
+.ABP-Unit .ABP-CommentColor {
+	background-image:url(color.svg);
+}
+.ABP-Unit .ABP-CommentColor:hover {
+	background-image:url(color-hover.svg);
+}
+/* comment text */
+.ABP-Unit .ABP-Text .ABP-TextBox input[type=text]{
+	background:transparent;
+	border:none;
+	padding:0;margin:0;
+	display:block;
+	vertical-align: middle;
+	font-family: monospace;
+	font-size:18px;
+	height:100%;
+	width:100%;
+	box-shadow: 0 5px 15px #eee inset;
+}
+/* comment send button */
+.ABP-Unit .ABP-CommentSend{
+	width:75px;
+	text-align:center;
+	font-size:14px;
+	background-color:#00a4d7;
+	color:#fff;
+	line-height:25px;
+}
+
+/** comment list **/
+/* width */
+.ABP-CommentList {
+	font-size:12px;
+	border:1px solid #e0e0e0;
+	margin:-1px;
+	height: 100%;
+}
+.ABP-CommentList .ABP-CommentList-Title {
+	background-color:#f8f8f8;
+	border-bottom:1px solid #e0e0e0;
+	overflow-y:overlay;
+}
+.ABP-CommentList .ABP-CommentList-Container {
+	background-color:#fff;
+	overflow-y:scroll;
+	/* height: see js/ABPRestyle.js */
+}
+.ABP-CommentList .ABP-CommentList-Item {
+	height:20px;
+	line-height:20px;
+}
+.ABP-CommentList .time {
+	width:15%;
+	float:left;
+	padding:5px;
+	overflow:hidden;
+}
+.ABP-CommentList .content {
+	width:50%;
+	float:left;
+	padding:5px;
+	overflow:hidden;
+	word-break:keep-all;
+	white-space:nowrap;
+}
+.ABP-CommentList .date {
+	float:left;
+	padding:5px;
+	overflow:hidden;
+}
+.ABP-CommentList > * > * {
+}
+.ABP-CommentList > * > * > *{
+}
+
+
+
+
+
+
+
 .ABP-Unit .ABP-Popup{
 	position:absolute;
 	border:1px solid #33b5e5;
@@ -307,12 +480,7 @@
 	opacity:0.8;
 }
 
-.ABP-Unit .ABP-SideBlock {
-	position:absolute;
-	width:300px;
-	right:0;
-	background:#CCC;
-}
+
 
 /** Aliases for Chinese named fonts because they don't work on *nix **/
 @font-face{
