@@ -35,7 +35,7 @@
 	position:absolute;
 	min-height:15px;
 	min-width:10px;
-	z-index:5;
+	z-index:999995;
 	background:#FFF;
 	overflow:visible;
 	word-break:keep-all;
@@ -59,7 +59,7 @@
 .ABP-Unit .ABP-Video{
 	position:absolute;
 	overflow:hidden;
-	top:0;left:0;right:0;bottom:50px;
+	top:0;left:0;right:0;bottom:52px;
 	background:#000;
 }
 .ABP-Unit.ABP-Screen .ABP-Video{
@@ -431,10 +431,13 @@
 	background-color:#f8f8f8;
 	border-bottom:1px solid #e0e0e0;
 	overflow-y:overlay;
+	height:25px;
 }
 .ABP-CommentList .ABP-CommentList-Container {
 	background-color:#fff;
 	overflow-y:scroll;
+	position:absollute;
+	width:100%;
 	/* height: see js/ABPRestyle.js */
 }
 .ABP-CommentList .ABP-CommentList-Item {

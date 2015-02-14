@@ -424,6 +424,7 @@ var ABP = {
 		var bind = ABP.bind(container, params.mobile);
 		if (typeof ABP_Restyle !== "undefined") ABP_Restyle();
 		if (params.src.hasOwnProperty("danmaku")) {
+			bind.cmManager.timeline = [];
 			CommentLoader(params.src.danmaku, bind.cmManager, function(){
 				var pCommentList = container.getElementsByClassName("ABP-CommentList-Container")[0];
 				for (var i=0;i<bind.cmManager.timeline.length;i++) {
@@ -662,6 +663,7 @@ var ABP = {
 				ABPInst.cmManager.clear();
 				ABPInst.cmManager.startTimer();
 				removeClass(ABPInst.btnDm, "ABP-DanmakuOff");
+					console.log("on progress");
 			} else {
 				ABPInst.cmManager.stopTimer();
 				ABPInst.cmManager.clear();
@@ -685,6 +687,7 @@ var ABP = {
 
 
 		ABPInst.addListener("play",function(){
+			ABPInst.cmManager.setBounds();
 			addClass(ABPInst.btnPlay,"ABP-Playing");
 		});
 		ABPInst.addListener("pause",function(){
@@ -692,6 +695,9 @@ var ABP = {
 		});
 		ABPInst.addListener("stop",function(){
 			removeClass(ABPInst.btnPlay,"ABP-Playing");
+		});
+		ABPInst.addListener("progress",function(){
+			console.log("on progress");
 		});
 
 
@@ -755,38 +761,24 @@ var ABP = {
 					}
 					ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
 				});
+				var loaded = false;
 				v.addEventListener("progress", function(){
-					console.log("on progress");
-					var buff;
-					try{
-						buff = this.buffered.end(0);
-					} catch(e) {
-						return;
-					}
-					var firsttime = !this.buffComplete;
-					if (this.duration-this.buffered.end(0)<0.05) {
-						this.buffComplete=true;
-					} else this.buffComplete=false;
-					for (var ii=0;ii<this.itemNo;ii++) {
-						if(!ABPInst.videos[ii].buffComplete) return;
-						buff+=ABPInst.videos[ii].duration;
-					}
-					if (firsttime && this.buffComplete) { // now it's the first time
-						var ii=this.itemNo+1;
-						while (ii<ABPInst.videos.length&&ABPInst.videos[ii].buffComplete) {
-							ABPInst.buffered += ABPInst.videos[ii].duration;
-							ii++;
+					var buff=0,b;
+					var i;
+					for (i=0;i<ABPInst.videos.length;i++) {
+						try{
+							b = ABPInst.videos[i].buffered.end(0);
+						} catch(e) {
+							break;
 						}
-						if(ii<ABPInst.videos.length) {
-							ABPInst.videos[ii].play();
-							ABPInst.videos[ii].pause();
-						} else {
-							ABPInst.dispatch("buffered");
-						}
-					} else return;
+						buff += b;
+						if (b<ABPInst.videos[i].duration) break;
+					}
 					ABPInst.buffered=buff;
 					ABPInst.barProgress.progress.secondary=time2rate(buff);
 					ABPInst.dispatch("progress");
+					if (ABPInst.buffered==ABPInst.duration) ABPInst.dispatch("buffered");
+					else if (i<ABPInst.videos.length) {ABPInst.videos[i].play();ABPInst.videos[i].pause();}
 				});
 				v.addEventListener("timeupdate", function() {
 					if (this.itemNo != ABPInst.currentItem) return;
