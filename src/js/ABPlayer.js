@@ -563,14 +563,14 @@ var ABP = {
 				console.err(listener+" is not a listener");
 				return;
 			}
-			eventListeners.push({"type":type,"listener":listener});
+			if (typeof eventListeners[type] == "undefined") eventListeners[type]=[];
+			eventListeners[type].push(listener);
 		};
 		ABPInst.dispatch = function(type, msg) {
-			for (var i=0;i<eventListeners.length;i++) {
-				if (eventListeners[i].type === type) {
-					if (typeof msg !== "undefined") eventListeners[i].listener(msg);
-					else eventListeners[i].listener();
-				}
+			if (typeof eventListeners[type] == "undefined") return;
+			for (var i=0;i<eventListeners[type].length;i++) {
+				if (typeof msg !== "undefined") eventListeners[type][i](msg);
+				else eventListeners[type][i]();
 			}
 		};
 
