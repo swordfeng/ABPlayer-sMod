@@ -288,13 +288,13 @@ var ABP = {
 					_("div", {
 						"className" : "button ABP-CommentFont",
 						"tooltip":_("div",{
-							"html":"弹幕大小与弹幕模式",
+							"html":"弹幕大小与弹幕模式（未实现）",
 						}),
 					}),
 					_("div", {
 						"className" : "button ABP-CommentColor",
 						"tooltip":_("div",{
-							"html":"弹幕颜色",
+							"html":"弹幕颜色（未实现）",
 						}),
 					}),
 					_("div", {
@@ -510,7 +510,8 @@ var ABP = {
 				seekto(x);
 			},
 			addListener:null,
-			dispatch:null
+			dispatch:null,
+			disableTime:15,
 		};
 
 
@@ -718,6 +719,7 @@ var ABP = {
 		ABPInst.divComment = playerUnit.getElementsByClassName("ABP-Container")[0];
 		ABPInst.timeLabel = playerUnit.getElementsByClassName("ABP-TimeLabel")[0];
 		ABPInst.btnSend = playerUnit.getElementsByClassName("ABP-CommentSend")[0];
+		ABPInst.videoarea = playerUnit.getElementsByClassName("ABP-Video")[0];
 
 		ABPInst.defaults.w = ABPInst.divComment.offsetWidth; 
 		ABPInst.defaults.h = ABPInst.divComment.offsetHeight;
@@ -782,7 +784,7 @@ var ABP = {
 				ABPInst.buffered=buff;
 				ABPInst.dispatch("progress");
 				if (ABPInst.buffered==ABPInst.duration) ABPInst.dispatch("buffered");
-				else if (this.buffered.length>0 && this.buffered.end(0) == this.duration && this.itemNo+1 != ABPInst.currentItem) {
+				else if (this.buffered.length>0 && this.buffered.end(0) == this.duration && this.itemNo+1 != ABPInst.currentItem && this.itemNo+1 < ABPInst.videos.length) {
 					ABPInst.videos[this.itemNo+1].play();
 					ABPInst.videos[this.itemNo+1].pause();
 				}
@@ -856,6 +858,13 @@ var ABP = {
 				ABPInst.pause();
 			}
 		});
+		ABPInst.videoarea.addEventListener("click", function(){
+			if(!ABPInst.playing){
+				ABPInst.play();
+			}else{
+				ABPInst.pause();
+			}
+		});
 		//progress bar
 		ABPInst.barProgress.addEventListener("stopdrag", function(){
 			seekto(this.progress.main / 100 * ABPInst.duration);
@@ -917,13 +926,20 @@ var ABP = {
 		//todo 
 		ABPInst.btnSend.addEventListener("click", function(){
 			ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
-			ABPInst.txtText.value="";
 		});
 		ABPInst.txtText.addEventListener("keydown", function(e){
 			if (e&&e.keyCode == 13) {
 				ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
-				ABPInst.txtText.value="";
 			}
+		});
+		ABPInst.addListener("senddanmaku", function(msg) {
+			console.log("send danmaku: "+msg);
+			ABPInst.txtText.value="发射器冷却中......";
+			ABPInst.txtText.setAttribute("disabled","disabled");
+			setTimeout(function() {
+				ABPInst.txtText.value="";
+				ABPInst.txtText.removeAttribute("disabled");
+			}, ABPInst.disableTime*1000);
 		});
 
 		/* key events */
