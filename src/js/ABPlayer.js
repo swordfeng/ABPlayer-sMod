@@ -422,7 +422,6 @@ var ABP = {
 			//todo
 		]));
 		var bind = ABP.bind(container, params.mobile);
-		if (typeof ABP_Restyle !== "undefined") ABP_Restyle();
 		if (params.src.hasOwnProperty("danmaku")) {
 			bind.cmManager.timeline = [];
 			CommentLoader(params.src.danmaku, bind.cmManager, function(){
@@ -455,6 +454,7 @@ var ABP = {
 				}
 			});
 		}
+		if (typeof ABP_Restyle !== "undefined") ABP_Restyle();
 		return bind;
 	}
 
@@ -698,6 +698,8 @@ var ABP = {
 		});
 		ABPInst.addListener("progress",function(){
 			console.log("on progress");
+			console.log(ABPInst.buffered);
+			ABPInst.barProgress.progress.secondary=time2rate(ABPInst.buffered);
 		});
 
 
@@ -757,11 +759,16 @@ var ABP = {
 						ABPInst.ready=true;
 						console.log("ABP duration "+ABPInst.duration);
 						ABPInst.timeLabel.setTime(0);
+						/* Force start to buffer */
+						ABPInst.videos[0].play();
+						ABPInst.videos[0].pause();
+						
 						ABPInst.dispatch("ready");
 					}
 					ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
 				});
 				var loaded = false;
+				var bufferingItem = 0;
 				v.addEventListener("progress", function(){
 					var buff=0,b;
 					var i;
@@ -775,10 +782,12 @@ var ABP = {
 						if (b<ABPInst.videos[i].duration) break;
 					}
 					ABPInst.buffered=buff;
-					ABPInst.barProgress.progress.secondary=time2rate(buff);
 					ABPInst.dispatch("progress");
 					if (ABPInst.buffered==ABPInst.duration) ABPInst.dispatch("buffered");
-					else if (i<ABPInst.videos.length) {ABPInst.videos[i].play();ABPInst.videos[i].pause();}
+					else if (this.buffered.length>0 && this.buffered.end(0) == this.duration && this.itemNo+1 != ABPInst.currentItem) {
+						ABPInst.videos[this.itemNo+1].play();
+						ABPInst.videos[this.itemNo+1].pause();
+					}
 				});
 				v.addEventListener("timeupdate", function() {
 					if (this.itemNo != ABPInst.currentItem) return;
