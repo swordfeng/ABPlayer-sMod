@@ -181,7 +181,7 @@ var ABP = {
 		return elem;
 	};
 
-	
+
 	var convTime = function(t) {
 		var sec=parseInt(t);
 		var min=parseInt(sec/60);
@@ -496,9 +496,6 @@ var ABP = {
 				danmaku:true,
 				mute:false,
 			}),
-			createPopup:null,
-			removePopup:null,
-			swapVideo: null,
 			resetLayout:null,
 			wideScreen:null,
 			fullWindow:null,
@@ -663,7 +660,7 @@ var ABP = {
 				ABPInst.cmManager.clear();
 				ABPInst.cmManager.startTimer();
 				removeClass(ABPInst.btnDm, "ABP-DanmakuOff");
-					console.log("on progress");
+				console.log("on progress");
 			} else {
 				ABPInst.cmManager.stopTimer();
 				ABPInst.cmManager.clear();
@@ -685,7 +682,7 @@ var ABP = {
 			}
 		};
 
-
+		//UI Reactions
 		ABPInst.addListener("play",function(){
 			ABPInst.cmManager.setBounds();
 			addClass(ABPInst.btnPlay,"ABP-Playing");
@@ -720,10 +717,11 @@ var ABP = {
 		ABPInst.btnDm = playerUnit.getElementsByClassName("ABP-CommentShow")[0];
 		ABPInst.divComment = playerUnit.getElementsByClassName("ABP-Container")[0];
 		ABPInst.timeLabel = playerUnit.getElementsByClassName("ABP-TimeLabel")[0];
-		
+		ABPInst.btnSend = playerUnit.getElementsByClassName("ABP-CommentSend")[0];
+
 		ABPInst.defaults.w = ABPInst.divComment.offsetWidth; 
 		ABPInst.defaults.h = ABPInst.divComment.offsetHeight;
-		
+
 		// bind danmaku
 		if(typeof CommentManager !== "undefined"){
 			ABPInst.cmManager = new CommentManager(ABPInst.divComment);
@@ -739,419 +737,230 @@ var ABP = {
 
 
 
-			/* set events */
+		/* set events */
 
-			// fullscreen monitor
-			window.addEventListener("resize", function(){
-				if (ABPInst.state.fullscreen && !(window.outerHeight==screen.height && window.outerWidth==screen.width))
-					ABPInst.resetLayout();
+		// fullscreen monitor
+		window.addEventListener("resize", function(){
+			if (ABPInst.state.fullscreen && !(window.outerHeight==screen.height && window.outerWidth==screen.width))
+				ABPInst.resetLayout();
+		});
+		//video events
+		for (var i=0;i<ABPInst.videos.length;i++) {
+			var v=ABPInst.videos[i];
+			var readyNum = 0;
+			v.itemNo=i;
+			v.buffComplete=false;
+			v.addEventListener("loadedmetadata",function(){
+				ABPInst.duration += ABPInst.videos[this.itemNo].duration;
+				readyNum++;
+				if (readyNum == ABPInst.videos.length) {
+					ABPInst.ready=true;
+					console.log("ABP duration "+ABPInst.duration);
+					ABPInst.timeLabel.setTime(0);
+					/* Force start to buffer */
+					ABPInst.videos[0].play();
+					ABPInst.videos[0].pause();
+
+					ABPInst.dispatch("ready");
+				}
+				ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
 			});
-			//video events
-			for (var i=0;i<ABPInst.videos.length;i++) {
-				var v=ABPInst.videos[i];
-				var readyNum = 0;
-				v.itemNo=i;
-				v.buffComplete=false;
-				v.addEventListener("loadedmetadata",function(){
-					ABPInst.duration += ABPInst.videos[this.itemNo].duration;
-					readyNum++;
-					if (readyNum == ABPInst.videos.length) {
-						ABPInst.ready=true;
-						console.log("ABP duration "+ABPInst.duration);
-						ABPInst.timeLabel.setTime(0);
-						/* Force start to buffer */
-						ABPInst.videos[0].play();
-						ABPInst.videos[0].pause();
-						
-						ABPInst.dispatch("ready");
+			var loaded = false;
+			var bufferingItem = 0;
+			v.addEventListener("progress", function(){
+				var buff=0,b;
+				var i;
+				for (i=0;i<ABPInst.videos.length;i++) {
+					try{
+						b = ABPInst.videos[i].buffered.end(0);
+					} catch(e) {
+						break;
 					}
-					ABPInst.videos[0].dispatchEvent(makeEvent("progress"));
-				});
-				var loaded = false;
-				var bufferingItem = 0;
-				v.addEventListener("progress", function(){
-					var buff=0,b;
-					var i;
-					for (i=0;i<ABPInst.videos.length;i++) {
-						try{
-							b = ABPInst.videos[i].buffered.end(0);
-						} catch(e) {
-							break;
-						}
-						buff += b;
-						if (b<ABPInst.videos[i].duration) break;
-					}
-					ABPInst.buffered=buff;
-					ABPInst.dispatch("progress");
-					if (ABPInst.buffered==ABPInst.duration) ABPInst.dispatch("buffered");
-					else if (this.buffered.length>0 && this.buffered.end(0) == this.duration && this.itemNo+1 != ABPInst.currentItem) {
-						ABPInst.videos[this.itemNo+1].play();
-						ABPInst.videos[this.itemNo+1].pause();
-					}
-				});
-				v.addEventListener("timeupdate", function() {
-					if (this.itemNo != ABPInst.currentItem) return;
-					if (waitting && ABPInst.cmManager) ABPInst.cmManager.startTimer();
-					waitting = false;
-					var nowtime=this.currentTime;
-					for (var ii=0;ii<this.itemNo;ii++) nowtime+=ABPInst.videos[ii].duration;
-					currentTime=nowtime;
-					if (!dragging) {
-						ABPInst.timeLabel.setTime(nowtime);
-						ABPInst.barProgress.progress.main=time2rate(nowtime);
-					}
-					ABPInst.cmManager.time(parseInt(nowtime*1000));
-				});
-				v.addEventListener("waitting", function(){
-					if (this.itemNo == ABPInst.currentItem) {
-						if ((!waitting) && ABPInst.cmManager)  ABPInst.cmManager.stopTimer();
-						waitting = true;
-					}
-				});
-				v.addEventListener("ended", function() {
-					if (this.itemNo != ABPInst.currentItem) return;
-					if (this.itemNo<ABPInst.videos.length-1) {
-						changeItem(this.itemNo+1);
-						ABPInst.videos[this.itemNo+1].currentTime=0;
-						ABPInst.videos[this.itemNo+1].play();
-					} else {
-						if (ABPInst.state.loop) {
-							seekto(0);
-						} else {
-							ABPInst.playing=false;
-							ABPInst.dispatch("stop");
-						}
-					}
-				});
-			}
-			//buttons
-			ABPInst.btnFullScr.addEventListener("click", function(){
-				if(!ABPInst.state.fullscreen){
-					ABPInst.fullScreen();
-				}else{
-					ABPInst.resetLayout();
+					buff += b;
+					if (b<ABPInst.videos[i].duration) break;
+				}
+				ABPInst.buffered=buff;
+				ABPInst.dispatch("progress");
+				if (ABPInst.buffered==ABPInst.duration) ABPInst.dispatch("buffered");
+				else if (this.buffered.length>0 && this.buffered.end(0) == this.duration && this.itemNo+1 != ABPInst.currentItem) {
+					ABPInst.videos[this.itemNo+1].play();
+					ABPInst.videos[this.itemNo+1].pause();
 				}
 			});
-			ABPInst.btnFullWin.addEventListener("click", function(){
-				if((!ABPInst.state.fullwindow)||ABPInst.state.fullscreen) {
-					ABPInst.fullWindow();;
+			v.addEventListener("timeupdate", function() {
+				if (this.itemNo != ABPInst.currentItem) return;
+				if (waitting && ABPInst.cmManager) ABPInst.cmManager.startTimer();
+				waitting = false;
+				var nowtime=this.currentTime;
+				for (var ii=0;ii<this.itemNo;ii++) nowtime+=ABPInst.videos[ii].duration;
+				currentTime=nowtime;
+				if (!dragging) {
+					ABPInst.timeLabel.setTime(nowtime);
+					ABPInst.barProgress.progress.main=time2rate(nowtime);
+				}
+				ABPInst.cmManager.time(parseInt(nowtime*1000));
+			});
+			v.addEventListener("waitting", function(){
+				if (this.itemNo == ABPInst.currentItem) {
+					if ((!waitting) && ABPInst.cmManager)  ABPInst.cmManager.stopTimer();
+					waitting = true;
+				}
+			});
+			v.addEventListener("ended", function() {
+				if (this.itemNo != ABPInst.currentItem) return;
+				if (this.itemNo<ABPInst.videos.length-1) {
+					changeItem(this.itemNo+1);
+					ABPInst.videos[this.itemNo+1].currentTime=0;
+					ABPInst.videos[this.itemNo+1].play();
 				} else {
-					ABPInst.resetLayout();
-				}
-			});
-			ABPInst.btnWide.addEventListener("click",function(){
-				if(!ABPInst.state.widescreen)
-					ABPInst.wideScreen();
-				else
-					ABPInst.resetLayout();
-			});
-			ABPInst.btnDm.addEventListener("click", function(){
-				ABPInst.setDanmaku(!ABPInst.state.danmaku);
-			});
-			ABPInst.btnLoop.addEventListener("click", function(){
-				ABPInst.setLoop(!ABPInst.state.loop);
-			});
-			ABPInst.btnPlay.addEventListener("click", function(){
-				if(!ABPInst.playing){
-					ABPInst.play();
-				}else{
-					ABPInst.pause();
-				}
-			});
-			//progress bar
-			ABPInst.barProgress.addEventListener("stopdrag", function(){
-				seekto(this.progress.main / 100 * ABPInst.duration);
-			});
-			ABPInst.barProgress.addEventListener("ondrag", function(){
-				ABPInst.timeLabel.setTime(this.progress.main/100*ABPInst.duration);
-			});
-			ABPInst.barProgress.bar.updatetooltip = function(e) {
-				var pos = e.clientX-this.getBoundingClientRect().left;
-				if (pos>=0 && pos<=this.offsetWidth) {
-					this.tooltip.innerHTML = convTime(pos*ABPInst.duration/this.offsetWidth);
-				}
-				var pr = document.body.getBoundingClientRect();
-				var er = this.getBoundingClientRect();
-				var tr = this.tooltip.getBoundingClientRect();
-				this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
-				this.tooltip.style.top = (er.top-pr.top-tr.height+2)+"px";
-			};
-			// mute button
-			ABPInst.btnVolume.addEventListener("click", function(){
-				ABPInst.mute(!ABPInst.state.mute);
-			});
-			//volume bar
-			ABPInst.barVolume.progress.main=100;
-			ABPInst.barVolume.addEventListener("stopdrag", function(){
-				for (var i=0;i<ABPInst.videos.length;i++) {
-					ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
-				}
-			});
-			ABPInst.barVolume.addEventListener("ondrag", function(){
-				for (var i=0;i<ABPInst.videos.length;i++) {
-					ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
-				}
-			});
-			ABPInst.barVolume.addEventListener("startdrag", function(){
-				ABPInst.mute(false);
-			});
-			//opacity bar
-			ABPInst.barOpacity.progress.main=100;
-			ABPInst.barOpacity.addEventListener("stopdrag",function(){
-				ABPInst.cmManager.options.global.opacity = ABPInst.barOpacity.progress.main/100;
-			});
-			ABPInst.barOpacity.addEventListener("ondrag",function(){
-				ABPInst.cmManager.options.global.opacity = ABPInst.barOpacity.progress.main/100;
-			});
-			ABPInst.barOpacity.bar.updatetooltip = function(e) {
-				var pos = e.clientX-this.getBoundingClientRect().left;
-				if (pos>=0 && pos<=this.offsetWidth) {
-					this.tooltip.innerHTML = parseInt(pos/this.offsetWidth*100)/100;
-				}
-				var pr = document.body.getBoundingClientRect();
-				var er = this.getBoundingClientRect();
-				var tr = this.tooltip.getBoundingClientRect();
-				this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
-			};
-
-			//
-			/* danmaku events */
-			//todo 
-
-			/* key events */
-			playerUnit.addEventListener("keydown", function(e){
-				if(e && e.keyCode == 32 && document.activeElement !== ABPInst.txtText){
-					ABPInst.btnPlay.click();
-					e.preventDefault();
-				}
-			});
-
-
-				/*
-			 //bar
-		 if(mobile){
-			 // Controls
-			 var controls = playerUnit.getElementsByClassName("ABP-Control");
-			 if(controls.length > 0){
-				 ABPInst.controlBar = controls[0];
-			 }
-			 var timer = -1;
-			 var hideBar = function(){
-				 ABPInst.controlBar.style.display = "none";
-				 ABPInst.divTextField.style.display = "none";
-				 ABPInst.divComment.style.bottom = "0px";
-				 ABPInst.cmManager.setBounds();
-			 };
-			 ABPInst.divComment.style.bottom = 
-				 (ABPInst.controlBar.offsetHeight + ABPInst.divTextField.offsetHeight) + "px";
-			 var listenerMove = function(){
-				 ABPInst.controlBar.style.display = "";
-				 ABPInst.divTextField.style.display = "";
-				 ABPInst.divComment.style.bottom = 
-					 (ABPInst.controlBar.offsetHeight + ABPInst.divTextField.offsetHeight) + "px";
-				 try{
-					 if (timer != -1){
-						 clearInterval(timer);
-						 timer = -1;
-					 }
-					 timer = setInterval(function(){
-						 if(document.activeElement !== ABPInst.txtText){
-							 hideBar();
-							 clearInterval(timer);
-							 timer = -1;
-						 }
-					 }, 2500);
-				 } catch(e){
-					 console.log(e);
-				 }
-			 };
-			 playerUnit.addEventListener("touchmove",listenerMove);
-			 playerUnit.addEventListener("mousemove",listenerMove);
-			 timer = setTimeout(function(){
-				 hideBar();
-			 }, 4000);
-		 }
-
-
-
-
-
-
-		 playerUnit.addEventListener("touchmove", function(e){
-			 event.preventDefault();
-		 });
-		 var _touch = null;
-		 playerUnit.addEventListener("touchstart", function(e){
-			 if(e.targetTouches.length > 0) {
-				 //Determine whether we want to start or stop
-				 _touch = e.targetTouches[0];
-			 }
-		 });
-		 playerUnit.addEventListener("touchend", function(e){
-			 if(e.changedTouches.length > 0) {
-				 if(_touch != null){
-					 var diffx = e.changedTouches[0].pageX - _touch.pageX;
-					 var diffy = e.changedTouches[0].pageY - _touch.pageY;
-					 if(Math.abs(diffx) < 20 && Math.abs(diffy) < 20){
-						 _touch = null;
-						 return;
-					 }
-					 if(Math.abs(diffx) > 3 * Math.abs(diffy)){
-						 if(diffx > 0) {
-							 if(ABPInst.video.paused){
-								 ABPInst.btnPlay.click();
-							 }
-						 } else {
-							 if(!ABPInst.video.paused){
-								 ABPInst.btnPlay.click();
-							 }
-						 }
-					 } else if (Math.abs(diffy) > 3 * Math.abs(diffx)) {
-						 if(diffy < 0){
-							 ABPInst.video.volume = Math.min(1,ABPInst.video.volume + 0.1)
-						 }else{
-							 ABPInst.video.volume = Math.max(0,ABPInst.video.volume - 0.1)
-						 }
-					 }
-					 _touch = null;
-				 }
-			 }
-		 });
-		 */
-
-/*
-			if(ABPInst.txtText !== null){
-				ABPInst.txtText.addEventListener("keyup", function(k){
-					if(this.value == null) return;
-					if(/^!/.test(this.value)){
-						this.style.color = "#5DE534";
-					}else{
-						this.style.color = "";
+					if (ABPInst.state.loop) {
+						seekto(0);
+					} else {
+						ABPInst.playing=false;
+						ABPInst.dispatch("stop");
 					}
-					if(k != null && k.keyCode === 13){
-						if(this.value == "") return;
-						if(/^!/.test(this.value)){
-							var commandPrompts = this.value.substring(1).split(":");
-							var command = commandPrompts.shift();
-							switch (command){
-								case "help":{
-									var popup = ABPInst.createPopup("提示信息：",2000);
-								}break;
-								case "speed":
-								case "rate":
-								case "spd":{
-									if(commandPrompts.length < 1){
-										ABPInst.createPopup("速度调节：输入百分比【 1% - 300% 】", 2000);
-									}else{
-										var pct = parseInt(commandPrompts[0]);
-										if(pct != NaN){
-											var percentage = Math.min(Math.max(pct, 1), 300);
-											ABPInst.video.playbackRate = percentage / 100;
-										}
-										if(ABPInst.cmManager !== null){
-											ABPInst.cmManager.clear();
-										}
-									}
-								}break;
-								case "off":{
-									ABPInst.cmManager.display = false;
-									ABPInst.cmManager.clear();
-									ABPInst.cmManager.stopTimer();
-								}break;
-								case "on":{
-									ABPInst.cmManager.display = true;
-									ABPInst.cmManager.startTimer();
-								}break;
-								case "cls":
-								case "clear":{
-									if(ABPInst.cmManager !== null){
-										ABPInst.cmManager.clear();
-									}
-								}break;
-								case "pp":
-								case "pause":{
-									ABPInst.video.pause();
-								}break;
-								case "p":
-								case "play":{
-									ABPInst.video.play();
-								}break;
-								case "vol":
-								case "volume":{
-									if(commandPrompts.length == 0){
-										var popup = ABPInst.createPopup("目前音量：" + 
-											Math.round(ABPInst.video.volume * 100) + "%", 2000);
-									}else{
-										var precVolume = parseInt(commandPrompts[0]);
-										if(precVolume !== null && precVolume !== NaN){
-											ABPInst.video.volume = Math.max(Math.min(precVolume, 100),0) / 100;
-										}
-										ABPInst.createPopup("目前音量：" + 
-											Math.round(ABPInst.video.volume * 100) + "%", 2000);
-									}
-								}break;
-								default:break;
-							}
-							this.value = "";
-						}
-					}else if(k != null && k.keyCode === 38){
-						if(!k.shiftKey){
-							ABPInst.video.volume = Math.round(Math.min((ABPInst.video.volume * 100) + 5, 100)) / 100;
-							ABPInst.removePopup();
-							var p = ABPInst.createPopup("目前音量：" + 
-								Math.round(ABPInst.video.volume * 100) + "%", 800);
-						}else{
-							if(ABPInst.cmManager !== null){
-								var opa = Math.min(Math.round(ABPInst.cmManager.def.opacity * 100) + 5,100);
-								ABPInst.cmManager.def.opacity = opa / 100;
-								ABPInst.removePopup();
-								var p = ABPInst.createPopup("弹幕透明度：" + Math.round(opa) + "%",800);
-							}
-						}
-					}else if(k != null && k.keyCode === 40){
-						if(!k.shiftKey){
-							ABPInst.video.volume = Math.round(Math.max((ABPInst.video.volume * 100) - 5, 0)) / 100;
-							ABPInst.removePopup();
-							var p = ABPInst.createPopup("目前音量：" + 
-								Math.round(ABPInst.video.volume * 100) + "%", 800);
-						}else{
-							if(ABPInst.cmManager !== null){
-								var opa = Math.max(Math.round(ABPInst.cmManager.def.opacity * 100) - 5,0);
-								ABPInst.cmManager.def.opacity = opa / 100;
-								ABPInst.removePopup();
-								var p = ABPInst.createPopup("弹幕透明度：" + Math.round(opa) + "%",800);
-							}
-						}
-					}
-				});
-			}
-			/** Create a bound CommentManager if possible **/
-			if(typeof CommentManager !== "undefined"){
-				if(ABPInst.state.autosize){
-					var autosize = function(){
-						if(video.videoHeight === 0 || video.videoWidth === 0){
-							return;
-						}
-						var aspectRatio = video.videoHeight / video.videoWidth;
-						// We only autosize within the bounds
-						var boundW = playerUnit.offsetWidth;
-						var boundH = playerUnit.offsetHeight;
-						var oldASR = boundH / boundW;
-
-						if(oldASR < aspectRatio){
-							playerUnit.style.width = (boundH / aspectRatio) + "px";
-							playerUnit.style.height = boundH  + "px";
-						}else{
-							playerUnit.style.width = boundW + "px";
-							playerUnit.style.height = (boundW * aspectRatio) + "px";
-						}
-
-						ABPInst.cmManager.setBounds();
-					};
-					video.addEventListener("loadedmetadata", autosize);
-					autosize();
 				}
-			}
-			return ABPInst;
+			});
 		}
-	})()
+		//buttons
+		ABPInst.btnFullScr.addEventListener("click", function(){
+			if(!ABPInst.state.fullscreen){
+				ABPInst.fullScreen();
+			}else{
+				ABPInst.resetLayout();
+			}
+		});
+		ABPInst.btnFullWin.addEventListener("click", function(){
+			if((!ABPInst.state.fullwindow)||ABPInst.state.fullscreen) {
+				ABPInst.fullWindow();;
+			} else {
+				ABPInst.resetLayout();
+			}
+		});
+		ABPInst.btnWide.addEventListener("click",function(){
+			if(!ABPInst.state.widescreen)
+				ABPInst.wideScreen();
+			else
+				ABPInst.resetLayout();
+		});
+		ABPInst.btnDm.addEventListener("click", function(){
+			ABPInst.setDanmaku(!ABPInst.state.danmaku);
+		});
+		ABPInst.btnLoop.addEventListener("click", function(){
+			ABPInst.setLoop(!ABPInst.state.loop);
+		});
+		ABPInst.btnPlay.addEventListener("click", function(){
+			if(!ABPInst.playing){
+				ABPInst.play();
+			}else{
+				ABPInst.pause();
+			}
+		});
+		//progress bar
+		ABPInst.barProgress.addEventListener("stopdrag", function(){
+			seekto(this.progress.main / 100 * ABPInst.duration);
+		});
+		ABPInst.barProgress.addEventListener("ondrag", function(){
+			ABPInst.timeLabel.setTime(this.progress.main/100*ABPInst.duration);
+		});
+		ABPInst.barProgress.bar.updatetooltip = function(e) {
+			var pos = e.clientX-this.getBoundingClientRect().left;
+			if (pos>=0 && pos<=this.offsetWidth) {
+				this.tooltip.innerHTML = convTime(pos*ABPInst.duration/this.offsetWidth);
+			}
+			var pr = document.body.getBoundingClientRect();
+			var er = this.getBoundingClientRect();
+			var tr = this.tooltip.getBoundingClientRect();
+			this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
+			this.tooltip.style.top = (er.top-pr.top-tr.height+2)+"px";
+		};
+		// mute button
+		ABPInst.btnVolume.addEventListener("click", function(){
+			ABPInst.mute(!ABPInst.state.mute);
+		});
+		//volume bar
+		ABPInst.barVolume.progress.main=100;
+		ABPInst.barVolume.addEventListener("stopdrag", function(){
+			for (var i=0;i<ABPInst.videos.length;i++) {
+				ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
+			}
+		});
+		ABPInst.barVolume.addEventListener("ondrag", function(){
+			for (var i=0;i<ABPInst.videos.length;i++) {
+				ABPInst.videos[i].volume = ABPInst.barVolume.progress.main/100;
+			}
+		});
+		ABPInst.barVolume.addEventListener("startdrag", function(){
+			ABPInst.mute(false);
+		});
+		//opacity bar
+		ABPInst.barOpacity.progress.main=100;
+		ABPInst.barOpacity.addEventListener("stopdrag",function(){
+			ABPInst.cmManager.options.global.opacity = ABPInst.barOpacity.progress.main/100;
+		});
+		ABPInst.barOpacity.addEventListener("ondrag",function(){
+			ABPInst.cmManager.options.global.opacity = ABPInst.barOpacity.progress.main/100;
+		});
+		ABPInst.barOpacity.bar.updatetooltip = function(e) {
+			var pos = e.clientX-this.getBoundingClientRect().left;
+			if (pos>=0 && pos<=this.offsetWidth) {
+				this.tooltip.innerHTML = parseInt(pos/this.offsetWidth*100)/100;
+			}
+			var pr = document.body.getBoundingClientRect();
+			var er = this.getBoundingClientRect();
+			var tr = this.tooltip.getBoundingClientRect();
+			this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
+		};
+
+		//
+		/* danmaku events */
+		//todo 
+		ABPInst.btnSend.addEventListener("click", function(){
+			ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
+			ABPInst.txtText.value="";
+		});
+		ABPInst.txtText.addEventListener("keydown", function(e){
+			if (e&&e.keyCode == 13) {
+				ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
+				ABPInst.txtText.value="";
+			}
+		});
+
+		/* key events */
+		playerUnit.addEventListener("keydown", function(e){
+			if(e && e.keyCode == 32 && document.activeElement !== ABPInst.txtText){
+				ABPInst.btnPlay.click();
+				e.preventDefault();
+			}
+		});
+
+		/** Create a bound CommentManager if possible **/
+		if(typeof CommentManager !== "undefined"){
+			if(ABPInst.state.autosize){
+				var autosize = function(){
+					if(video.videoHeight === 0 || video.videoWidth === 0){
+						return;
+					}
+					var aspectRatio = video.videoHeight / video.videoWidth;
+					// We only autosize within the bounds
+					var boundW = playerUnit.offsetWidth;
+					var boundH = playerUnit.offsetHeight;
+					var oldASR = boundH / boundW;
+
+					if(oldASR < aspectRatio){
+						playerUnit.style.width = (boundH / aspectRatio) + "px";
+						playerUnit.style.height = boundH  + "px";
+					}else{
+						playerUnit.style.width = boundW + "px";
+						playerUnit.style.height = (boundW * aspectRatio) + "px";
+					}
+
+					ABPInst.cmManager.setBounds();
+				};
+				video.addEventListener("loadedmetadata", autosize);
+				autosize();
+			}
+		}
+		return ABPInst;
+	}
+})()
