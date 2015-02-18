@@ -936,11 +936,11 @@ var ABP = {
 			};
 		}
 		ABPInst.dminsert=function (dm) {
-			cm.insert(dm);
-			cmList.appendChild(makeDmItem(dm));
+			ABPInst.cmManager.insert(dm);
+			ABPInst.cmList.appendChild(makeDmItem(dm));
 		};
 		ABPInst.dmsend=function(dm) {
-			cm.send(dm);
+			ABPInst.cmManagersend(dm);
 		};
 		ABPInst.btnSend.addEventListener("click", function(){
 			ABPInst.dispatch("senddanmaku", makeDanmaku());
