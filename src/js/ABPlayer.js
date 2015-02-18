@@ -940,7 +940,7 @@ var ABP = {
 			ABPInst.cmList.appendChild(makeDmItem(dm));
 		};
 		ABPInst.dmsend=function(dm) {
-			ABPInst.cmManagersend(dm);
+			ABPInst.cmManager.send(dm);
 		};
 		ABPInst.btnSend.addEventListener("click", function(){
 			ABPInst.dispatch("senddanmaku", makeDanmaku());
