@@ -755,7 +755,8 @@ var ABP = {
 			v.addEventListener("progress", function(){
 				var buff=0,b;
 				var i;
-				for (i=0;i<ABPInst.videos.length;i++) {
+				for (i=0;i<ABPInst.currentItem;i++) b+=ABPInst.videos[i].duration;
+				for (;i<ABPInst.videos.length;i++) {
 					try{
 						b = ABPInst.videos[i].buffered.end(0);
 					} catch(e) {
