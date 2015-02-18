@@ -198,6 +198,32 @@ var ABP = {
 		return num;  
 	} 
 
+	var makeDmItem = function(dm) {
+		if (typeof dm.date != "undefined") var d = new Date(dm.date*1000);
+		return _("div",{
+			"className":"ABP-CommentList-Item",
+		},[
+			_("div", {
+				"className":"time",
+				"html":convTime(parseInt(dm.stime/1000)),
+			}),
+			_("div", {
+				"className":"content",
+				"html":dm.text,
+				"tooltip":_("div",{
+					"html":dm.text,
+				}),
+			}),
+			_("div", {
+				"className":"date",
+				"html":d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2),
+				"tooltip":_("div",{
+					"html":d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2)+":"+pad0(d.getSeconds(),2),
+				}),
+			})
+		]);
+	};
+
 	ABP.create = function (element, params) {
 		var elem = element;
 		if(!params){
@@ -425,32 +451,8 @@ var ABP = {
 		if (params.src.hasOwnProperty("danmaku")) {
 			bind.cmManager.timeline = [];
 			CommentLoader(params.src.danmaku, bind.cmManager, function(){
-				var pCommentList = container.getElementsByClassName("ABP-CommentList-Container")[0];
 				for (var i=0;i<bind.cmManager.timeline.length;i++) {
-					var d = new Date(bind.cmManager.timeline[i].date*1000);
-					var node = _("div",{
-						"className":"ABP-CommentList-Item",
-					},[
-						_("div", {
-							"className":"time",
-							"html":convTime(parseInt(bind.cmManager.timeline[i].stime/1000)),
-						}),
-						_("div", {
-							"className":"content",
-							"html":bind.cmManager.timeline[i].text,
-							"tooltip":_("div",{
-								"html":bind.cmManager.timeline[i].text,
-							}),
-						}),
-						_("div", {
-							"className":"date",
-							"html":d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2),
-							"tooltip":_("div",{
-								"html":d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2)+":"+pad0(d.getSeconds(),2),
-							}),
-						})
-					]);
-					pCommentList.appendChild(node);
+					bind.cmList.appendChild(makeDmItem(bind.cmManager.timeline[i]));
 				}
 			});
 		}
@@ -479,6 +481,7 @@ var ABP = {
 			divTextField:null,
 			txtText:null,
 			cmManager:null,
+			cmList:null,
 			currentItem:0,
 			duration:0,
 			buffered:0,
@@ -513,8 +516,7 @@ var ABP = {
 			dispatch:null,
 			disableTime:15,
 		};
-
-
+		
 
 		// private functions
 		function changeItem(item) {
@@ -683,23 +685,7 @@ var ABP = {
 			}
 		};
 
-		//UI Reactions
-		ABPInst.addListener("play",function(){
-			ABPInst.cmManager.setBounds();
-			addClass(ABPInst.btnPlay,"ABP-Playing");
-		});
-		ABPInst.addListener("pause",function(){
-			removeClass(ABPInst.btnPlay,"ABP-Playing");
-		});
-		ABPInst.addListener("stop",function(){
-			removeClass(ABPInst.btnPlay,"ABP-Playing");
-		});
-		ABPInst.addListener("progress",function(){
-			console.log("on progress");
-			console.log(ABPInst.buffered);
-			ABPInst.barProgress.progress.secondary=time2rate(ABPInst.buffered);
-		});
-
+		
 
 
 		/* start binding */
@@ -720,6 +706,7 @@ var ABP = {
 		ABPInst.timeLabel = playerUnit.getElementsByClassName("ABP-TimeLabel")[0];
 		ABPInst.btnSend = playerUnit.getElementsByClassName("ABP-CommentSend")[0];
 		ABPInst.videoarea = playerUnit.getElementsByClassName("ABP-Video")[0];
+		ABPInst.cmList = playerUnit.getElementsByClassName("ABP-CommentList-Container")[0];
 
 		ABPInst.defaults.w = ABPInst.divComment.offsetWidth; 
 		ABPInst.defaults.h = ABPInst.divComment.offsetHeight;
@@ -731,13 +718,9 @@ var ABP = {
 			ABPInst.cmManager.clear();
 		}
 
-
-
 		ABPInst.timeLabel.setTime = function(t) {
 			this.innerHTML = convTime(t)+"/"+convTime(ABPInst.duration);
 		}
-
-
 
 		/* set events */
 
@@ -921,19 +904,54 @@ var ABP = {
 			this.tooltip.style.left = (pos+er.left-pr.left-tr.width/2)+"px";
 		};
 
+		//UI Reactions
+		ABPInst.addListener("play",function(){
+			ABPInst.cmManager.setBounds();
+			addClass(ABPInst.btnPlay,"ABP-Playing");
+		});
+		ABPInst.addListener("pause",function(){
+			removeClass(ABPInst.btnPlay,"ABP-Playing");
+		});
+		ABPInst.addListener("stop",function(){
+			removeClass(ABPInst.btnPlay,"ABP-Playing");
+		});
+		ABPInst.addListener("progress",function(){
+			console.log("on progress");
+			console.log(ABPInst.buffered);
+			ABPInst.barProgress.progress.secondary=time2rate(ABPInst.buffered);
+		});
+
+
 		//
 		/* danmaku events */
-		//todo 
+		//todo
+		function makeDanmaku() {
+			return {
+				"mode": 1,
+				"stime": parseInt(ABPInst.currentTime*1000),
+				"text": ABPInst.txtText.value,
+				"size": 25,
+				"color": 0xffffff,
+				"date": parseInt((new Date()).valueOf()/1000),
+			};
+		}
+		ABPInst.dminsert=function (dm) {
+			cm.insert(dm);
+			cmList.appendChild(makeDmItem(dm));
+		};
+		ABPInst.dmsend=function(dm) {
+			cm.send(dm);
+		};
 		ABPInst.btnSend.addEventListener("click", function(){
-			ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
+			ABPInst.dispatch("senddanmaku", makeDanmaku());
 		});
 		ABPInst.txtText.addEventListener("keydown", function(e){
 			if (e&&e.keyCode == 13) {
-				ABPInst.dispatch("senddanmaku", ABPInst.txtText.value);
+				ABPInst.dispatch("senddanmaku", makeDanmaku());
 			}
 		});
-		ABPInst.addListener("senddanmaku", function(msg) {
-			console.log("send danmaku: "+msg);
+		ABPInst.addListener("senddanmaku", function(dm) {
+			console.log("send danmaku: "+dm);
 			ABPInst.txtText.value="发射器冷却中......";
 			ABPInst.txtText.setAttribute("disabled","disabled");
 			setTimeout(function() {
