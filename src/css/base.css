@@ -175,6 +175,7 @@
 	top:-4px;
 	right:-6px;
 	content: "";
+	box-shadow:0 0 5px #ccc;
 }
 .ABP-Unit .bar .dark:after{
 	height:6px;
@@ -186,7 +187,6 @@
 	top:-1px;
 	right:-3px;
 	content: "";
-	box-shadow:0 0 5px #ddd;
 }
 .ABP-Unit .bar .load{
 	position:absolute;
