@@ -438,6 +438,7 @@
 	overflow-y:scroll;
 	position:absollute;
 	width:100%;
+	height:613px; /* based on practice */
 	/* height: see js/ABPRestyle.js */
 }
 .ABP-CommentList .ABP-CommentList-Item {
