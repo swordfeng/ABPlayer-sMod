@@ -146,30 +146,30 @@ var ABP = {
 		};
 		elem.progress.main = 0;
 		elem.progress.secondary = 0;
-		var dragging = false;
+		elem.dragging = false;
 		var dragrate;
 		_bar.addEventListener("mousedown", function(e){
-			dragging = true;
+			elem.dragging = true;
 			var pos = e.clientX-this.getBoundingClientRect().left;
 			if (pos>=0 && pos<=this.offsetWidth) dragrate=pos*100/this.offsetWidth;
 			elem.progress.main = dragrate;
 			elem.dispatchEvent(new Event("startdrag"));
 		});
 		document.addEventListener("mouseup", function(e){
-			if (dragging) {
-				dragging = false;
+			if (elem.dragging) {
+				elem.dragging = false;
 				elem.dispatchEvent(new Event("stopdrag"));
 			}
 		});
 		_bar.addEventListener("mouseup", function(e){
-			dragging=false;
+			elem.dragging=false;
 			var pos = e.clientX-this.getBoundingClientRect().left;
 			if (pos>=0 && pos<=this.offsetWidth) dragrate=pos*100/this.offsetWidth;
 			elem.progress.main = dragrate;
 			elem.dispatchEvent(new Event("stopdrag"));
 		});
 		_bar.addEventListener("mousemove", function(e){
-			if(dragging) {
+			if(elem.dragging) {
 				var pos = e.clientX-this.getBoundingClientRect().left;
 				if (pos>=0 && pos<=this.offsetWidth) {
 					dragrate=pos*100/this.offsetWidth;
@@ -199,7 +199,7 @@ var ABP = {
 	} 
 
 	var makeDmItem = function(dm) {
-		if (typeof dm.date != "undefined") var d = new Date(dm.date*1000);
+		var d = new Date(dm.date*1000);
 		return _("div",{
 			"className":"ABP-CommentList-Item",
 		},[
@@ -216,9 +216,9 @@ var ABP = {
 			}),
 			_("div", {
 				"className":"date",
-				"html":d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2),
+				"html":(d.getMonth()+1)+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2),
 				"tooltip":_("div",{
-					"html":d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2)+":"+pad0(d.getSeconds(),2),
+					"html":d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()+" "+d.getHours()+":"+pad0(d.getMinutes(),2)+":"+pad0(d.getSeconds(),2),
 				}),
 			})
 		]);
@@ -663,7 +663,6 @@ var ABP = {
 				ABPInst.cmManager.clear();
 				ABPInst.cmManager.startTimer();
 				removeClass(ABPInst.btnDm, "ABP-DanmakuOff");
-				console.log("on progress");
 			} else {
 				ABPInst.cmManager.stopTimer();
 				ABPInst.cmManager.clear();
@@ -851,9 +850,11 @@ var ABP = {
 		});
 		//progress bar
 		ABPInst.barProgress.addEventListener("stopdrag", function(){
+			dragging = false;
 			seekto(this.progress.main / 100 * ABPInst.duration);
 		});
 		ABPInst.barProgress.addEventListener("ondrag", function(){
+			dragging = true;
 			ABPInst.timeLabel.setTime(this.progress.main/100*ABPInst.duration);
 		});
 		ABPInst.barProgress.bar.updatetooltip = function(e) {
@@ -917,8 +918,6 @@ var ABP = {
 			removeClass(ABPInst.btnPlay,"ABP-Playing");
 		});
 		ABPInst.addListener("progress",function(){
-			console.log("on progress");
-			console.log(ABPInst.buffered);
 			ABPInst.barProgress.progress.secondary=time2rate(ABPInst.buffered);
 		});
 
