@@ -1,4 +1,4 @@
-var ABP_Restyle = function() {
+var ABP_Restyle = function() {/*
 	var playerUnits = document.getElementsByClassName("ABP-Unit");
 	for (var i=0;i<playerUnits.length;++i) {
 		var pUnit = playerUnits[i];
@@ -7,5 +7,5 @@ var ABP_Restyle = function() {
 			pCommentList.style.height = (pUnit.getBoundingClientRect().bottom-pCommentList.getBoundingClientRect().bottom-1)+"px";
 		};
 		pCommentList.onload();
-	};
+	};*/
 };
