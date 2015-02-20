@@ -783,7 +783,7 @@ var ABP = {
 					ABPInst.timeLabel.setTime(nowtime);
 					ABPInst.barProgress.progress.main=time2rate(nowtime);
 				}
-				ABPInst.cmManager.time(parseInt(nowtime*1000));
+				if (ABPInst.state.danmaku) ABPInst.cmManager.time(parseInt(nowtime*1000));
 			});
 			v.addEventListener("waitting", function(){
 				if (this.itemNo == ABPInst.currentItem) {
