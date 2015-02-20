@@ -774,7 +774,7 @@ var ABP = {
 			});
 			v.addEventListener("timeupdate", function() {
 				if (this.itemNo != ABPInst.currentItem) return;
-				if (waitting && ABPInst.cmManager) ABPInst.cmManager.startTimer();
+				if (waitting && ABPInst.cmManager && ABPInst.state.danmaku) ABPInst.cmManager.startTimer();
 				waitting = false;
 				var nowtime=this.currentTime;
 				for (var ii=0;ii<this.itemNo;ii++) nowtime+=ABPInst.videos[ii].duration;
